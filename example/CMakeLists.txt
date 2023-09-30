@@ -28,6 +28,7 @@ add_executable(sleeper ${SOURCES})
 target_link_libraries(sleeper
     pipeExec
     stdpus
+    pthread
 )
 
 # Set the output directory for the executable
