@@ -1,0 +1,9 @@
+[user]
+	name = Pablo Lopez
+	email = lopez.ramos.pablo@gmail.com
+	mail = lopez.ramos.pablo@gmail.com
+[core]
+	editor = vim
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
