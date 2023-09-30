@@ -1,0 +1,20 @@
+# Build outputs
+build/
+*.exe
+*.o
+*.a
+*.so
+
+# Generated files
+*.html
+*.pdf
+*.xml
+*.json
+
+# Other files
+.vscode/
+.cproject
+.env
+*~
+*.tmp
+*.swp
