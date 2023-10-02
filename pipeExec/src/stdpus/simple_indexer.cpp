@@ -44,7 +44,7 @@ SimpleIndexer::~SimpleIndexer() {}
 /**
  * @brief Sets the internal counter to 0
  */
-void SimpleIndexer::Init(void** pre_process_args) { counter_ = 0; }
+void SimpleIndexer::Init(void* pre_process_args) { counter_ = 0; }
 
 /**
  * @brief Gets the pipeData from the pipe and indexes it by adding the extra data

@@ -21,7 +21,7 @@ void Adder::Run(void *data) {
 /**
  * @brief Doesn't allocate nothing
  */
-void Adder::Init(void **pre_process_args) {}
+void Adder::Init(void *pre_process_args) {}
 
 /**
  * @brief Doesn't delete nothing

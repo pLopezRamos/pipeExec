@@ -43,7 +43,7 @@ class DoublePipe : public ProcessingUnitInterface {
   DoublePipe();
   ~DoublePipe();
 
-  void Init(void** = nullptr);
+  void Init(void* = nullptr);
   void Run(void*);
   void End();
   ProcessingUnitInterface* Clone();

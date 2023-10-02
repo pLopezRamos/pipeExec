@@ -49,7 +49,7 @@ class Sleeper : public ProcessingUnitInterface {
   ~Sleeper();
 
   // This method receives the arguments for the sleeping time
-  void Init(void ** = nullptr);
+  void Init(void * = nullptr);
 
   // This method sets the thread to sleep for x seconds
   void Run(void *);

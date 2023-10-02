@@ -37,7 +37,7 @@
 /**
  * @brief Starts the number printer.
  */
-void NumberPrinter::Init(void **pre_process_args) {}
+void NumberPrinter::Init(void *pre_process_args) {}
 
 /**
  * @brief Prints the number contained in a given pointer.

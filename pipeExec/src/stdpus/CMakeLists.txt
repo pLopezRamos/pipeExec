@@ -29,7 +29,6 @@ install(FILES
 	indexer.h
 	null_unit.h
 	number_printer.h
-	sadder.h
 	simple_indexer.h
 	sleeper.h
 

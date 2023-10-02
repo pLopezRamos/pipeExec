@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 11)
 # Set the source files
 set(SOURCES ${CMAKE_SOURCE_DIR}/src/sleeper_main.cpp)
 
+#set(SLEEPDS ${CMAKE_SOURCE_DIR}/src/sleeperD.cpp
+#            ${CMAKE_SOURCE_DIR}/src/sleeper_data.cpp)
+
 # Set the include directories
 include_directories(
 #    ${CMAKE_HOME_DIRECTORY}/include/pipeExec
@@ -23,6 +26,7 @@ link_directories(
 
 # Create the executable
 add_executable(sleeper ${SOURCES})
+#add_executable(sleeperD ${SLEEPDS})
 
 # Link against the libraries (replace with your library names)
 target_link_libraries(sleeper
@@ -30,6 +34,13 @@ target_link_libraries(sleeper
     stdpus
     pthread
 )
+
+# Link against the libraries (replace with your library names)
+#target_link_libraries(sleeperD
+#    pipeExec
+#    stdpus
+#    pthread
+#)
 
 # Set the output directory for the executable
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/bin)

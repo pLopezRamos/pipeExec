@@ -30,7 +30,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
   NullUnit void_unit;
   int allocated_memory;
   // DATOS
-  int number_of_data_items = 10000;
+  int number_of_data_items = 100;
   // HILOS
   int number_of_threads = 100;
   int total_threads = (unit1_threads + unit2_threads + unit3_threads + unit4_threads) * number_of_threads;
@@ -48,15 +48,19 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
     data_in->LoadMemoryManager(holder);
   }
 
+  int* data1 = new int(1); 
+  int* data2 = new int(2);
+  int* data3 = new int(3);
+
   Pipeline *pipe = new Pipeline(&void_unit, data_in, 1, debug_flag, profiling);
-  pipe->AddProcessingUnit(&sleeper_unit1, number_of_threads * unit1_threads, "d", 1);
-  printf("\tStage 1 - sleep time 1, number of threads %d\n", number_of_threads * unit1_threads);
-  pipe->AddProcessingUnit(&sleeper_unit2, number_of_threads * unit2_threads, "d", 2);
-  printf("\tStage 2 - sleep time 2, number of threads %d\n", number_of_threads * unit2_threads);
-  pipe->AddProcessingUnit(&sleeper_unit3, number_of_threads * unit3_threads, "d", 3);
-  printf("\tStage 3 - sleep time 3, number of threads %d\n", number_of_threads * unit3_threads);
-  pipe->AddProcessingUnit(&sleeper_unit4, number_of_threads * unit4_threads, "d", 1);
-  printf("\tStage 4 - sleep time 1, number of threads %d\n", number_of_threads * unit4_threads);
+  pipe->AddProcessingUnit(&sleeper_unit1, number_of_threads * unit1_threads, data1);
+  printf("\tStage 1 - sleep time %d, number of threads %d\n", *data1, number_of_threads * unit1_threads);
+  pipe->AddProcessingUnit(&sleeper_unit2, number_of_threads * unit2_threads, data2);
+  printf("\tStage 2 - sleep time %d, number of threads %d\n", *data2, number_of_threads * unit2_threads);
+  pipe->AddProcessingUnit(&sleeper_unit3, number_of_threads * unit3_threads, data3);
+  printf("\tStage 3 - sleep time %d, number of threads %d\n", *data3, number_of_threads * unit3_threads);
+  pipe->AddProcessingUnit(&sleeper_unit4, number_of_threads * unit4_threads, data1);
+  printf("\tStage 4 - sleep time %d, number of threads %d\n", *data1, number_of_threads * unit4_threads);
   pipe->RunPipe();
 
   printf("Processing %d data items\n", number_of_data_items);

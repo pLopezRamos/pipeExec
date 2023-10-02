@@ -82,8 +82,6 @@ class Pipeline {
   ~Pipeline();
 
   // Adds a new processing unit to the Pipeline
-  void AddProcessingUnit(ProcessingUnitInterface *, int, const char * = nullptr,
-                         ...);
   void AddProcessingUnit(ProcessingUnitInterface *, int, void * = nullptr);
 
   // Runs the pipe making all the threads wait for an input
@@ -95,25 +93,9 @@ class Pipeline {
   void Profile();
 
  private:
-  /**
-   * @brief The types of the internal arguments
-   * @desc The types of the internal arguments in the variadic function
-   */
-  enum ArgumentType {
-    kInt,         /**< Type is int */
-    kUnsigned,    /**< Type is unsigned */
-    kFloat,       /**< Type is float/double */
-    kExponential, /**< Type is exponential (1eX) */
-    kString,      /**< Type is string */
-    kChar         /**< Type is char */
-  };
-
   std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
                                              be executed in order */
   int count_arguments(const char *); /**< Returns the number of arguments */
-
-  ArgumentType extract_arg(const char *,
-                           uint64_t); /**< Extracts the argument type */
 
   std::mutex execution_mutex_; /**< The mutex to safely run the nodes */
   std::mutex profiling_mutex_; /**< The mutex to safely recollect times */

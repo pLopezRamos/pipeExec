@@ -96,7 +96,7 @@ std::vector<std::thread *> &PipeNode::running_threads() {
  *
  * @return A pointer to the array of extra args
  */
-void **PipeNode::extra_args() { return extra_args_; }
+void *PipeNode::extra_args() { return extra_args_; }
 
 /**
  * @brief Sets the input memory manager of the current node
@@ -167,6 +167,6 @@ void PipeNode::PushThread(std::thread *thread) {
  *
  * @param args The pointer to the array of args
  */
-void PipeNode::extra_args(void **args) { extra_args_ = args; }
+void PipeNode::extra_args(void *args) { extra_args_ = args; }
 
 /* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

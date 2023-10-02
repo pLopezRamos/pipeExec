@@ -45,7 +45,7 @@ class Indexer : public ProcessingUnitInterface {
   Indexer();
   ~Indexer();
 
-  void Init(void ** = nullptr) override;
+  void Init(void * = nullptr) override;
   void Run(void *) override;
   void End() override;
   ProcessingUnitInterface *Clone() override;

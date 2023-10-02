@@ -44,7 +44,7 @@ Indexer::~Indexer() {}
 /**
  * @desc This function initializes the Indexer unit
  */
-void Indexer::Init(void **pre_process_args) {
+void Indexer::Init(void *pre_process_args) {
   table_size_ = 0;
   lookup_table_ = (TableIndexer *)malloc(sizeof(TableIndexer));
 }

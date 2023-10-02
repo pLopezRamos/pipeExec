@@ -42,7 +42,7 @@
 class NumberPrinter : public ProcessingUnitInterface {
  public:
   // Doesn't allocate anything
-  void Init(void ** = nullptr);
+  void Init(void * = nullptr);
 
   // Prints the number to the standard output
   void Run(void *);

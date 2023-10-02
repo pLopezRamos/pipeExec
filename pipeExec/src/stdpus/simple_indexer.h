@@ -39,7 +39,7 @@ class SimpleIndexer : public ProcessingUnitInterface {
   SimpleIndexer();
   ~SimpleIndexer();
 
-  void Init(void ** = nullptr) override;
+  void Init(void * = nullptr) override;
   void Run(void *) override;
   void End() override;
   ProcessingUnitInterface *Clone() override;

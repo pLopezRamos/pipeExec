@@ -49,87 +49,6 @@ Pipeline::Pipeline(ProcessingUnitInterface *first_function,
 Pipeline::~Pipeline() {}
 
 /**
- * @brief Adds a processing unit to the execution list.
- * @details Adds a processing unit to the execution list. Creates a new Memory
- * Manager in the previous node for it to function as an output of the previous
- * and an input for the new one. Sets the previous node flag of last_node to
- * false and gets the new node to be the tail. Then connects the output of the
- * last node to the input of the first node to complete the circular processing
- * queue.
- *
- * @param processing_unit A pointer to an object of ProcessingUnitInterface
- * @param instances The number of threads that have to be instanced to run this
- * node.
- * @param fmg A pointer to the format string of the next arguments
- */
-void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit,
-                                 int instances, const char *fmt, ...) {
-  PipeNode *new_node = new PipeNode;
-
-  // Variadic function handling
-  if (fmt != nullptr) {
-    int n_args = count_arguments(fmt);
-    void **push_arguments = (void **)malloc(n_args * sizeof(void *));
-    va_list variadic_args;
-    va_start(variadic_args, fmt);
-    for (int i = 0; i < n_args; ++i) {
-      ArgumentType arg = extract_arg(fmt, i);
-      switch (arg) {
-        case kInt: {
-          int64_t argument = va_arg(variadic_args, int64_t);
-          push_arguments[i] = new int64_t(argument);
-        } break;
-
-        case kUnsigned: {
-          uint64_t argument = va_arg(variadic_args, uint64_t);
-          push_arguments[i] = new uint64_t(argument);
-        } break;
-
-        case kFloat: {
-          double argument = va_arg(variadic_args, double);
-          push_arguments[i] = new double(argument);
-        } break;
-
-        case kExponential: {
-          double argument = va_arg(variadic_args, double);
-          push_arguments[i] = new double(argument);
-        } break;
-
-        case kString: {
-          char *argument = va_arg(variadic_args, char *);
-          push_arguments[i] = new char *(argument);
-        } break;
-
-        case kChar: {
-          char argument = va_arg(variadic_args, int);
-          push_arguments[i] = new char(argument);
-        } break;
-
-        default: {
-          throw PipelineError::kBadArgumentType;
-        } break;
-      }
-    }
-    va_end(variadic_args);
-    new_node->extra_args(push_arguments);
-  }
-
-  int prev_idx = node_number_ - 1;
-  execution_list_[prev_idx]->last_node(false);
-  execution_list_[prev_idx]->out_data_queue(new MemoryManager(
-      execution_list_[0]->in_data_queue()->max_size(), debug_));
-
-  new_node->out_data_queue(execution_list_[0]->in_data_queue());
-  new_node->in_data_queue(execution_list_[prev_idx]->out_data_queue());
-  new_node->node_id(node_number_);
-  new_node->last_node(true);
-  new_node->processing_unit(processing_unit);
-  new_node->number_of_instances(instances);
-  execution_list_.push_back(new_node);
-  node_number_ += 1;
-}
-
-/**
  *
  * @param processing_unit A pointer to an object of ProcessingUnitInterface
  * @param instances The number of threads that have to be instanced to run this
@@ -140,7 +59,7 @@ void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit,
                                  int instances, void *startData) {
   PipeNode *new_node = new PipeNode;
 
-  new_node->extra_args(&startData);
+  new_node->extra_args(startData);
 
   int prev_idx = node_number_ - 1;
   execution_list_[prev_idx]->last_node(false);
@@ -301,42 +220,6 @@ int Pipeline::count_arguments(const char *str) {
     counter += 1;
   }
   return counter;
-}
-
-/**
- * @brief This method extracts each argument for it to be compared to a series
- * of specified formats to allow the extraction of the arguments of the
- * AddProcessingUnit variadic function
- *
- * @param fmt The C string containing the format
- * @param arg_pos The position of the argument in the C string: (0,1,2...);
- */
-Pipeline::ArgumentType Pipeline::extract_arg(const char *fmt, uint64_t arg_pos) {
-  ArgumentType result;
-  char c = fmt[arg_pos];
-  switch (c) {
-    case 'd':
-      result = ArgumentType::kInt;
-      break;
-    case 'u':
-      result = ArgumentType::kUnsigned;
-      break;
-    case 'f':
-      result = ArgumentType::kFloat;
-      break;
-    case 'e':
-      result = ArgumentType::kExponential;
-      break;
-    case 's':
-      result = ArgumentType::kString;
-      break;
-    case 'c':
-      result = ArgumentType::kChar;
-      break;
-    default:
-      throw PipelineError::kBadArgumentFormat;
-  }
-  return result;
 }
 
 void Pipeline::Profile() {

@@ -48,7 +48,7 @@ class NullUnit : public ProcessingUnitInterface {
 
   // Doesn't allocate nothing
 //  void Init(void** = nullptr) override;
-  void Init(void** = nullptr);
+  void Init(void* = nullptr);
 
   // Doesn't delete nothing
 //  void End();
