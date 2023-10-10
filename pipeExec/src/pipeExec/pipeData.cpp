@@ -21,7 +21,7 @@
  */
 
 /**
- * @file data.cc
+ * @file data.cpp
  *
  * @brief The header file for the pipeData class
  *

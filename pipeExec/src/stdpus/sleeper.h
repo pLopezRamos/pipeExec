@@ -48,11 +48,29 @@ class Sleeper : public ProcessingUnitInterface {
   // Default destructor
   ~Sleeper();
 
-  // This method receives the arguments for the sleeping time
-  void Init(void * = nullptr);
+  /**
+   * @brief initialize
+   *
+   * @details If an argument is give, it will set the sleep time to what
+   * it points. If the pointer is null then set the time to 0.
+   *
+   * @param initData - a pointer to an integer
+   *
+   * @return void
+   */
+  void Init(void *initData = nullptr);
 
-  // This method sets the thread to sleep for x seconds
-  void Run(void *);
+  /**
+   * @brief Execute the sleep
+   *
+   * @details If the sleep time given is less or equal to 0, then use the value
+   * set in INit(), otherwise use the value it point to.
+   *
+   * @param sleepTime - a pointer to an integer
+   *
+   * @return void
+   */
+  void Run(void *sleepTime);
 
   // Does nothing
   void End();

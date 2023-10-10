@@ -21,9 +21,10 @@
 
 #include "sleeper.h"
 #include "null_unit.h"
+#include <random>
 
 int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
-  Sleeper sleeper_unit1; int unit1_threads = 1;
+  Sleeper sleeper_unit1; int unit1_threads = 1; 
   Sleeper sleeper_unit2; int unit2_threads = 2;
   Sleeper sleeper_unit3; int unit3_threads = 3;
   Sleeper sleeper_unit4; int unit4_threads = 1;
@@ -32,8 +33,18 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
   // DATOS
   int number_of_data_items = 100;
   // HILOS
-  int number_of_threads = 100;
+  int number_of_threads = 1;
   int total_threads = (unit1_threads + unit2_threads + unit3_threads + unit4_threads) * number_of_threads;
+
+  // Use a random device to seed the random number generator
+  std::random_device rd;
+
+  // Use the random device to generate a seed for the random number engine
+  std::mt19937 gen(rd());
+
+  // Define a distribution for the range of numbers you want
+  std::uniform_int_distribution<int> distribution(1, 10); // Generates numbers between 1 and 10
+
 
   if ( total_threads > number_of_data_items )
     allocated_memory = number_of_data_items + 1;
@@ -43,7 +54,8 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
   printf("Running 4 stage pipe using queue size = %d\n", allocated_memory);
   MemoryManager *data_in = new MemoryManager(allocated_memory, debug_flag);
   for (int i = 0; i < allocated_memory; i += 1) {
-    pipeData *holder = new pipeData(new int(i));
+//   pipeData *holder = new pipeData(new int(i));
+    pipeData *holder = new pipeData(new int(0));
     holder->PushExtraData(new pipeData::DataKey{"profiling", &profiling});
     data_in->LoadMemoryManager(holder);
   }
@@ -63,16 +75,26 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
   printf("\tStage 4 - sleep time %d, number of threads %d\n", *data1, number_of_threads * unit4_threads);
   pipe->RunPipe();
 
+  std::vector<int> sleeps = { 5, 8, 1, 3,7, 3, 3, 1, 1, 1, 1, 8,5,9, 2,3,1} ;
+
   printf("Processing %d data items\n", number_of_data_items);
+  int *data_handler;
+  int val;
+  pipeData *data;
   for (int i = 0; i < number_of_data_items; ++i) {
     if (debug_flag) {
       printf("(main) Popping from IN\n");
     }
-    int *data_handler = (int *)data_in->PopFromIn();
+    data = (pipeData *)data_in->PopFromIn();
+    data_handler = (int *)data->data();
+//    val = distribution(gen);
+//    val = sleeps[i % 17];
+//    *data_handler = &val;
+    printf("Sending item %d with a %ds sleep\n", i, *data_handler);
     if (debug_flag) {
       printf("(main) Pushing into OUT \n");
     }
-    data_in->PushIntoOut(data_handler);
+    data_in->PushIntoOut((void*)data);
   }
   pipe->WaitFinish();
 
@@ -86,5 +108,5 @@ int main() {
   SleeperMain(false, false, false);
 
   exit(0);
-  }
+}
 /* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */
