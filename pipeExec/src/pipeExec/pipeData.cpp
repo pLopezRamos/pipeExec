@@ -68,12 +68,13 @@ void pipeData::PushExtraData(DataKey *extra_data) {
  * @param key The key to lookup in the vector
  */
 void *pipeData::GetExtraData(std::string key) {
-  int size = extra_data_.size();
-  for (int it = 0; it < size; ++it) {
-    if (extra_data_[it]->key == key) {
-      return extra_data_[it]->data;
+
+  for (const auto& entry : extra_data_) {
+    if (entry->key == key) {
+      return entry->data;
     }
   }
+
   // No data found with that key
   return nullptr;
 }
@@ -83,5 +84,3 @@ void *pipeData::GetExtraData(std::string key) {
  * @return The pointer to the data
  */
 void *pipeData::data() { return data_; }
-
-/* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

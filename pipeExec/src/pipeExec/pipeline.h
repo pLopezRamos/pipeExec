@@ -95,8 +95,6 @@ class Pipeline {
  private:
   std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
                                              be executed in order */
-  int count_arguments(const char *); /**< Returns the number of arguments */
-
   std::mutex execution_mutex_; /**< The mutex to safely run the nodes */
   std::mutex profiling_mutex_; /**< The mutex to safely recollect times */
   int node_number_;            /**< The number of nodes that are active */

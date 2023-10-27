@@ -26,20 +26,24 @@ Sleeper::~Sleeper() {}
 
 void Sleeper::Init(void *initData) {
   seconds_to_sleep_ = 0;
+
   if (initData != nullptr) {
-    seconds_to_sleep_ = (int)*(int*)initData;
+    pipeData *data = (pipeData*)initData;
+    int *time = (int*)(data->data());
+    seconds_to_sleep_ = *time;
   }
 }
 
 void Sleeper::Run(void *sleepTime) {
 
-  int time = (int)*(int*)sleepTime;
+  pipeData *data;
+  int *time = (int*)(data->data());
 
-  if ( time > 0 ) {
-//    std::cout << "from data - sleeping " << time << "s" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(time));
+  if ( *time > 0 ) {
+    std::cout << "from data - sleeping " << *time << "s" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(*time));
   } else {
-//    std::cout << "flom init - sleeping " << seconds_to_sleep_ << "s" << std::endl;
+    std::cout << "flom init - sleeping " << seconds_to_sleep_ << "s" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(seconds_to_sleep_));
     }
     
@@ -48,5 +52,3 @@ void Sleeper::Run(void *sleepTime) {
 ProcessingUnitInterface *Sleeper::Clone() { return new Sleeper; }
 
 void Sleeper::End() {}
-
-/* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

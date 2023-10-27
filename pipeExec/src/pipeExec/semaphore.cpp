@@ -45,10 +45,7 @@ void Semaphore::Wait() {
   cond_var_.wait(lock, [this] {
     bool result = count_ > 0;
     if (debug_) {
-      printf("        (SEMAPHORE %s)%s , count: %d\n", 
-             type_.c_str(), 
-             result ? "PASSED" : "BLOCKED",
-             count_.load() - 1);
+      printf("        (SEMAPHORE %s)%s , count: %d\n", type_.c_str(), result ? "PASSED" : "BLOCKED", count_.load() - 1);
     }
     return result;
   });
@@ -65,8 +62,7 @@ void Semaphore::Signal() {
   std::unique_lock<std::mutex> lock(mutex_);
   count_++;
   if (debug_) {
-    printf("        (SEMAPHORE %s) SIGNAL count: %d\n", 
-           type_.c_str(), count_.load());
+    printf("        (SEMAPHORE %s) SIGNAL count: %d\n", type_.c_str(), count_.load());
   }
   cond_var_.notify_one();
 }

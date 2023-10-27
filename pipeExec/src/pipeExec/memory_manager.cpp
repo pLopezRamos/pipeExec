@@ -41,14 +41,14 @@
  *
  * @param mx_size The maximum number of memory buffers the queue can hold
  * @param debug The flag for the debug information
- * @throw MemoryManagerError::kBadSizing If the maximum size is less than 1
+ * @throw invalid_argument If the maximum size is less than 1
  */
 MemoryManager::MemoryManager(int mx_size, bool debug)
   : max_size_(mx_size), debug_(debug), rear_in_iterator_(-1), rear_out_iterator_(-1),
   front_in_iterator_(0), front_out_iterator_(0), out_queue_count_(0), in_queue_count_(0) {
     // Validate the maximum size parameter
     if (mx_size < 1) {
-      throw MemoryManagerError::kBadSizing;
+      throw std::invalid_argument("mx_size has to be grater 0");
     }
 
     // Allocate memory for in_queue_ and out_queue_ using malloc
@@ -167,7 +167,7 @@ MemoryManager::~MemoryManager() {
 /**
  * @brief Pops a memory buffer from the input queue.
  *
- * @throw Throws MemoryManagerError::kNullPtr If the content to return is null
+ * @throw Throws out_of_range If the content to return is null
  * (it can't be processed)
  *
  * @return Pointer to the memory buffer.
@@ -184,7 +184,7 @@ void *MemoryManager::PopFromIn() {
   if (in_queue_count_ == 0) {
     // The queue is empty, so we cannot pop an element from the queue
     pop_in_mutex_.unlock();
-    throw MemoryManagerError::kEmptyQueue;
+    throw std::out_of_range("The in queue is empty, nothing to return.");
   }
 
   // Pop the element from the queue
@@ -207,7 +207,7 @@ void *MemoryManager::PopFromIn() {
 /**
  * @brief Pops a memory buffer from the output queue.
  *
- * @throw MemoryManagerError::kNullPtr If the content to return is null (it
+ * @throw out_of_range If the content to return is null (it
  * can't be processed)
  *
  * @return Pointer to the memory buffer.
@@ -224,7 +224,7 @@ void *MemoryManager::PopFromOut() {
   if (out_queue_count_ == 0) {
     // The queue is empty, so we cannot pop an element from the queue
     pop_out_mutex_.unlock();
-    throw MemoryManagerError::kEmptyQueue;
+    throw std::out_of_range("The out queue is empty, nothing to return.");
   }
 
   // Pop the element from the queue
