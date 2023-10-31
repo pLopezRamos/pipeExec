@@ -24,13 +24,6 @@ void Adder::Run(void *data) {
 void Adder::Init(void *pre_process_args) {}
 
 /**
- * @brief Doesn't delete nothing
- */
-void Adder::End() {}
-
-/**
  * @brief Returns a new pointer to another instance of Adder
  */
 ProcessingUnitInterface *Adder::Clone() { return new Adder(); }
-
-/* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

@@ -61,7 +61,8 @@ class ProcessingUnitInterface {
    * @brief Use this function to free all the memory allocated in the Start
    * method
    */
-  virtual void End() = 0;
+//  virtual void End() = 0;
+  virtual void End() {return;};
 
   /**
    * @brief Returns new pointer to a processing unit class. Use {return new

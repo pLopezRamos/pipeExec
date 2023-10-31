@@ -59,15 +59,7 @@ void SimpleIndexer::Run(void* data) {
 }
 
 /**
- * @brief Use this function to delete any allocated memory inside the Start or
- * Run methods.
- */
-void SimpleIndexer::End() {}
-
-/**
  * @brief Returns a pointer to a new instance of the class.
  * @return The new instance of the class
  */
 ProcessingUnitInterface* SimpleIndexer::Clone() { return new SimpleIndexer; }
-
-/* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

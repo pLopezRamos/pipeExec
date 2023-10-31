@@ -50,5 +50,3 @@ void Sleeper::Run(void *sleepTime) {
 }
 
 ProcessingUnitInterface *Sleeper::Clone() { return new Sleeper; }
-
-void Sleeper::End() {}

@@ -41,7 +41,6 @@ class SimpleIndexer : public ProcessingUnitInterface {
 
   void Init(void * = nullptr) override;
   void Run(void *) override;
-  void End() override;
   ProcessingUnitInterface *Clone() override;
 
  private:

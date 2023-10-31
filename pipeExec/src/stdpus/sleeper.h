@@ -72,9 +72,6 @@ class Sleeper : public ProcessingUnitInterface {
    */
   void Run(void *sleepTime);
 
-  // Does nothing
-  void End();
-
   // This function clones the instance of the sleeper procesing unit
   ProcessingUnitInterface *Clone();
 

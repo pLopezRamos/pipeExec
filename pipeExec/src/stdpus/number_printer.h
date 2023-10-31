@@ -47,9 +47,6 @@ class NumberPrinter : public ProcessingUnitInterface {
   // Prints the number to the standard output
   void Run(void *);
 
-  // Doesn't deallocate anything
-  void End();
-
   // Returns a pointer to a clone of NumberPrinter
   ProcessingUnitInterface *Clone();
 };

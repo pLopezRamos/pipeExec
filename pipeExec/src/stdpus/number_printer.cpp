@@ -51,15 +51,8 @@ void NumberPrinter::Run(void *data) {
 }
 
 /**
- * @brief Does nothing.
- */
-void NumberPrinter::End() {}
-
-/**
  * @brief Creates a new instance of the number printer.
  *
  * @return A pointer to a new NumberPrinter object.
  */
 ProcessingUnitInterface *NumberPrinter::Clone() { return new NumberPrinter; }
-
-/* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

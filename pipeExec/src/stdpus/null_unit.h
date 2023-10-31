@@ -43,19 +43,12 @@ class NullUnit : public ProcessingUnitInterface {
   ~NullUnit();
 
   // Does nothing
-//  void Run(void*) override;
-  void Run(void*);
+  void Run(void*) override;
 
   // Doesn't allocate nothing
 //  void Init(void** = nullptr) override;
-  void Init(void* = nullptr);
 
-  // Doesn't delete nothing
-//  void End();
-  void End() override;
-
-//  ProcessingUnitInterface* Clone() override;
-  ProcessingUnitInterface* Clone();
+  ProcessingUnitInterface* Clone() override;
 };
 
 #endif

@@ -37,8 +37,4 @@ NullUnit::~NullUnit() {}
 
 void NullUnit::Run(void* data) {}
 
-void NullUnit::Init(void* init_data) {}
-
-void NullUnit::End() {}
-
 ProcessingUnitInterface* NullUnit::Clone() { return new NullUnit; }

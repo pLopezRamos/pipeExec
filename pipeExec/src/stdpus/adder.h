@@ -53,9 +53,6 @@ class Adder : public ProcessingUnitInterface {
   // Doesn't allocate nothing
   void Init(void * = nullptr) override;
 
-  // Doesn't Doesn't delete nothing
-  void End() override;
-
   // Returns a clone of Adder
   ProcessingUnitInterface *Clone() override;
 };
