@@ -22,27 +22,44 @@ Sleeper::~Sleeper() {}
  *
  * @return void
  */
-void Sleeper::Init(void* initData) {
+void Sleeper::Init(void *initData)
+{
     seconds_to_sleep_ = 0;
-    if (initData != nullptr) {
-        pipeData* hold = static_cast<pipeData*>(initData);
-        int* time = static_cast<int*>(hold->GetExtraData(extraDataKey)); // Corrected variable names
-        if (time != nullptr) {
+    if (initData != nullptr)
+    {
+        int *time = static_cast<int *>(initData);
+        if (time != nullptr)
+        {
             seconds_to_sleep_ = *time;
         }
     }
 }
 
-void Sleeper::Run(void* sleepTime) {
-    if (seconds_to_sleep_ > 0) {
-        std::cout << "from data - sleeping " << seconds_to_sleep_ << "s" << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(seconds_to_sleep_));
-    } else {
-        std::cout << "from init - sleeping " << seconds_to_sleep_ << "s" << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(seconds_to_sleep_));
+void Sleeper::Run(void *sleepTime)
+{ // Allways gets a pipeData
+
+    if (sleepTime != nullptr)
+    {
+        int *time = static_cast<int *>(getExtraData(sleepTime, extraDataKey));
+
+        if (seconds_to_sleep_ > 0 & time == nullptr)
+        {
+            std::cout << "from init - sleeping " << seconds_to_sleep_ << "s" << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(seconds_to_sleep_));
+        }
+        else
+        {
+  //          std::cout << "from data - sleeping " << *time << "s" << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(*time));
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Has to be called from pipeExec.");
     }
 }
 
-ProcessingUnitInterface* Sleeper::Clone() {
+ProcessingUnitInterface *Sleeper::Clone()
+{
     return new Sleeper;
 }

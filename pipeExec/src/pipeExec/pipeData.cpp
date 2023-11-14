@@ -79,6 +79,24 @@ void *pipeData::GetExtraData(std::string key) {
   return nullptr;
 }
 
+/// @brief Change the value stored in extra data
+/// @param newData The value to be stored
+/// @param key The key that identifies the data element 
+/// @return The old value or nullptr if the key is not found
+void *pipeData::ResetExtraData(void *newData, std::string key) {
+
+  void *oldData;
+
+  for (const auto& entry : extra_data_) {
+    if (entry->key == key) {
+      oldData = entry->data;
+      entry->data = newData;
+      return oldData;
+    }
+  }
+  return nullptr;
+}
+
 /**
  * @brief Returns the initial stored data inside the class
  * @return The pointer to the data

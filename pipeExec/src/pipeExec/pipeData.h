@@ -84,6 +84,8 @@ class pipeData {
   // Gets the initial data stored in the class
   void *data();
 
+void *ResetExtraData(void *newData, std::string key);
+
  private:
   void *data_;
   unsigned int index_;

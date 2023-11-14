@@ -1,6 +1,6 @@
 /*
  * pipeExec is a library for creating concurrent proccesing pipes
- * 
+ *
  * Copyright (C) 2023 Lucas Hernández Abreu and Pablo López Ramos
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,14 +39,15 @@
  * @brief This class is the parent class of all the processing units we will
  * create
  */
-class ProcessingUnitInterface {
- public:
+class ProcessingUnitInterface
+{
+public:
   /**
    * @brief Use this function to allocate memory for the variables that need
    * it and initialize some of them
    */
-  virtual void Init(void ** = nullptr) {return;};
-  virtual void Init(void * = nullptr) {return;};
+  virtual void Init(void ** = nullptr) { return; };
+  virtual void Init(void * = nullptr) { return; };
 
   /**
    * @brief Use this function to process the data. It's recommended to recast
@@ -61,8 +62,8 @@ class ProcessingUnitInterface {
    * @brief Use this function to free all the memory allocated in the Start
    * method
    */
-//  virtual void End() = 0;
-  virtual void End() {return;};
+  //  virtual void End() = 0;
+  virtual void End() { return; };
 
   /**
    * @brief Returns new pointer to a processing unit class. Use {return new
@@ -71,6 +72,32 @@ class ProcessingUnitInterface {
    * cloning
    */
   virtual ProcessingUnitInterface *Clone() { return nullptr; };
+
+  /// @brief Returns the basic data from the pipeData object
+  /// @param data - A pointer to the pipeData object
+  /// @return The void pointer from the pipeData object
+  void *getData(void *data)
+  {
+    pipeData* pipeD = static_cast<pipeData*>(data);
+    return (pipeD != nullptr) ? pipeD->data() : nullptr;
+  }
+
+  /// @brief Get the data pointer assiciated with the given key
+  /// @param data a pointer to the pipeData obejct
+  /// @param key The key to search for
+  /// @return The data associated to the key or nullptr if not found
+  void *getExtraData(void *data, const std::string key)
+  {
+    if (data)
+    {
+      auto hold = static_cast<pipeData *>(data);
+      return hold->GetExtraData(key);
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
 };
 
 #endif
