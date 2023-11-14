@@ -37,7 +37,9 @@
 
 /**
  * @class Sleeper
+ *
  * @brief This class makes the thread sleep for x seconds, given in the start
+ *
  * arguments
  */
 class Sleeper : public ProcessingUnitInterface {
@@ -75,8 +77,11 @@ class Sleeper : public ProcessingUnitInterface {
   // This function clones the instance of the sleeper procesing unit
   ProcessingUnitInterface *Clone();
 
+  const std::string getKey() { return extraDataKey; };
+
  private:
   uint32_t seconds_to_sleep_;
+  const std::string extraDataKey = "_#sleeper#time#_";
 };
 
 #endif  // SLEEPER_H

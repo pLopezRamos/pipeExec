@@ -55,6 +55,20 @@ class pipeData {
     void *data;      /**< The extra data stored*/
   };
 
+  /**
+   * @brief Set the DataKey structure to the given key and data
+   *
+   * @return True if the key is unique and flase otherwise.
+   */
+  bool setDataKey(std::string key, void *data);
+
+  /**
+   * @brief Check if the given key exists in the pipeData object
+   *
+   * @return True if the key exists, false otgherwise
+   */
+  bool isKey(std::string key);
+
   // The data constructor
   pipeData(void *, bool = false);
 

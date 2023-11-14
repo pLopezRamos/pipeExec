@@ -40,21 +40,19 @@
  * @brief This class represents an adder, it gets a number and adds 1 to it
  */
 class Adder : public ProcessingUnitInterface {
- public:
-  // Default constructor
-  Adder();
+  public:
 
-  // Destructor
-  ~Adder();
+    void Init(void *data) override;
 
-  // Adds one to the integer pointer by the data pointer
-  void Run(void *) override;
+    // Adds one to the integer pointer by the data pointer
+    void Run(void *data) override;
 
-  // Doesn't allocate nothing
-  void Init(void * = nullptr) override;
+    // Returns a new instance of Adder.
+    ProcessingUnitInterface* Clone() override { return new Adder(); };
 
-  // Returns a clone of Adder
-  ProcessingUnitInterface *Clone() override;
+  private:
+
+    int incValue_;
 };
 
 #endif

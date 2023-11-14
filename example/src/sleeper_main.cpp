@@ -64,19 +64,23 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling) {
   int* data2 = new int(9);
   int* data3 = new int(3);*/
 
-  pipeData *data1 = new pipeData(new int(1));
-  pipeData *data2 = new pipeData(new int(9));
-  pipeData *data3 = new pipeData(new int(3));
+  int d1 = 1;
+  int d2 = 9;
+  int d3 = 3;
+
+  pipeData *data1 = new pipeData(&d1);
+  pipeData *data2 = new pipeData(&d2);
+  pipeData *data3 = new pipeData(&d3);
 
   Pipeline *pipe = new Pipeline(&void_unit, data_in, 1, debug_flag, profiling);
   pipe->AddProcessingUnit(&sleeper_unit1, number_of_threads * unit1_threads, (void*)data1);
-//  printf("\tStage 1 - sleep time %d, number of threads %d\n", *data1, number_of_threads * unit1_threads);
+  printf("\tStage 1 - sleep time %d, number of threads %d\n", d1, number_of_threads * unit1_threads);
   pipe->AddProcessingUnit(&sleeper_unit2, number_of_threads * unit2_threads, (void*)data2);
-  //printf("\tStage 2 - sleep time %d, number of threads %d\n", *data2, number_of_threads * unit2_threads);
+  printf("\tStage 2 - sleep time %d, number of threads %d\n", d2, number_of_threads * unit2_threads);
   pipe->AddProcessingUnit(&sleeper_unit3, number_of_threads * unit3_threads, (void*)data3);
- // printf("\tStage 3 - sleep time %d, number of threads %d\n", *data3, number_of_threads * unit3_threads);
+  printf("\tStage 3 - sleep time %d, number of threads %d\n", d3, number_of_threads * unit3_threads);
   pipe->AddProcessingUnit(&sleeper_unit4, number_of_threads * unit4_threads, (void*)data1);
-//  printf("\tStage 4 - sleep time %d, number of threads %d\n", *data1, number_of_threads * unit4_threads);
+  printf("\tStage 4 - sleep time %d, number of threads %d\n", d1, number_of_threads * unit4_threads);
   pipe->RunPipe();
 
   std::vector<int> sleeps = { 5, 8, 1, 3,7, 3, 3, 1, 1, 1, 1, 8,5,9, 2,3,1} ;
