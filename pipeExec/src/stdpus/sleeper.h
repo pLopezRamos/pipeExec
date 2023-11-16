@@ -60,7 +60,7 @@ class Sleeper : public ProcessingUnitInterface {
    *
    * @return void
    */
-  void Init(void *initData = nullptr);
+  void Init(void *initData = nullptr) override;
 
   /**
    * @brief Execute the sleep
@@ -72,16 +72,13 @@ class Sleeper : public ProcessingUnitInterface {
    *
    * @return void
    */
-  void Run(void *sleepTime);
+  void Run(void *sleepTime) override;
 
   // This function clones the instance of the sleeper procesing unit
-  ProcessingUnitInterface *Clone();
-
-  const std::string getKey() { return extraDataKey; };
+  ProcessingUnitInterface *Clone() override { return new Sleeper(); };
 
  private:
-  uint32_t seconds_to_sleep_;
-  const std::string extraDataKey = "_#sleeper#time#_";
+  int seconds_to_sleep_;
 };
 
 #endif  // SLEEPER_H

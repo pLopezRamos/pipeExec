@@ -73,6 +73,10 @@ public:
    */
   virtual ProcessingUnitInterface *Clone() { return nullptr; };
 
+  std::string getKey() { return extraDataKey; };
+
+  void setKey(std::string key = "_#STD#NO#KEY#_") { extraDataKey = key; };
+
   /// @brief Returns the basic data from the pipeData object
   /// @param data - A pointer to the pipeData object
   /// @return The void pointer from the pipeData object
@@ -98,6 +102,10 @@ public:
       return nullptr;
     }
   }
-};
 
+protected:
+
+  std::string extraDataKey;
+
+};
 #endif

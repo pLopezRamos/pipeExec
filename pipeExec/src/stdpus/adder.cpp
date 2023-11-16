@@ -1,10 +1,16 @@
 #include "adder.h"
 
 void Adder::Init(void *data) {
-  pipeData *handler = (pipeData *)data;
-  int* val = (int*)handler->data();
+  incValue_ = 1;
 
-  incValue_ = *val;
+  if (data != nullptr)
+  {
+    int* val = static_cast<int*>(data);
+    if (val != nullptr)
+    {
+      incValue_ = *val;
+    }
+  }
 }
 
 /**
@@ -13,10 +19,25 @@ void Adder::Init(void *data) {
  */
 // should be void * Adder::Run(void *data) ... return data;
 void Adder::Run(void *data) {
-  pipeData *handler = (pipeData *)data;
-  int* val = (int*)handler->data();
+  if (data != nullptr)
+  {
+    int *val = static_cast<int*>(getData(data));
+    int *incVal = static_cast<int*>(getExtraData(data, getKey()));
 
-  *val += incValue_;
-  //  *((int *)handler->data()) += 1;
+    if (incVal == nullptr )
+    {
+      std::cout << "from init - increment = " << incValue_ << std::endl;
+      *val += incValue_;
+    }
+    else
+    {
+      //          std::cout << "from data - sleeping " << *time << "s" << std::endl;
+      *val += *incVal;
+    }
+  }
+  else
+  {
+    throw std::runtime_error("Has to be called from pipeExec.");
+  }
 }
 

@@ -20,21 +20,29 @@
  */
 
 #include "sleeper.h"
+#include "drano.h"
 #include "null_unit.h"
 #include <random>
 #include <iostream>
 
 int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 {
-  Sleeper sleeper_unit1, sleeper_unit2, sleeper_unit3, sleeper_unit4;
-  int unit1_threads = 5, unit2_threads = 5, unit3_threads = 5, unit4_threads = 5;
+  Sleeper sleeper_unit[4];
+  Drano drano_unit[4];
+  int threads[4] = { 1, 1, 1, 1};
+  int sleepTime[4] = { 1, 9 , 3, 1 };
+  int stages = 4;
+  bool adaptable = true;
+
   NullUnit void_unit;
   int allocated_memory;
-  // DATOS
-  int number_of_data_items = 1000;
-  // HILOS
+  int number_of_data_items = 100;
   int number_of_threads = 1;
-  int total_threads = (unit1_threads + unit2_threads + unit3_threads + unit4_threads) * number_of_threads;
+  int total_threads = threads[0];
+  for (int i = 1; i  < stages; ++i)
+    total_threads += threads[i];
+  total_threads *= number_of_threads;
+
 
   // Use a random device to seed the random number generator
   std::random_device rd;
@@ -50,66 +58,50 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   else
     allocated_memory = total_threads + 1;
 
-  allocated_memory *= 4; // the number of stages
-  printf("Running 4 stage pipe using queue size = %d\n", allocated_memory);
-  MemoryManager *data_in = new MemoryManager(allocated_memory, debug_flag);
+  allocated_memory = 10;
+  //  allocated_memory *= stages; // the number of stages
+  printf("Running %d stage pipe using queue size = %d\n", stages, allocated_memory);
+
+  MemoryManager *data_queue = new MemoryManager(allocated_memory, debug_flag);
   for (int i = 0; i < allocated_memory; ++i)
   {
-     pipeData *holder = new pipeData(new int(0));
-    // pipeData *holder = new pipeData(nullptr);
-    holder->PushExtraData(new pipeData::DataKey{sleeper_unit1.getKey(), static_cast<void*>(new int(0))});
+//    pipeData *holder = new pipeData(new int(0));
+    pipeData *holder = new pipeData(nullptr);
+    holder->PushExtraData(new pipeData::DataKey{sleeper_unit[0].getKey(), static_cast<void*>(new int(0))});
     holder->PushExtraData(new pipeData::DataKey{"profiling", &profiling});
-    data_in->LoadMemoryManager(holder);
+    data_queue->LoadMemoryManager(holder);
   }
 
-  auto d1 = new int(1);
-  auto d2 = new int(9);
-  auto d3 = new int(3);
-
-  Pipeline *pipe = new Pipeline(&void_unit, data_in, 1, debug_flag, profiling);
-  pipe->AddProcessingUnit(&sleeper_unit1, number_of_threads * unit1_threads, static_cast<void *>(d1));
-  printf("\tStage 1 - sleep time %d, number of threads %d\n", *d1, number_of_threads * unit1_threads);
-  pipe->AddProcessingUnit(&sleeper_unit2, number_of_threads * unit2_threads, static_cast<void *>(d2));
-  printf("\tStage 2 - sleep time %d, number of threads %d\n", *d2, number_of_threads * unit2_threads);
-  pipe->AddProcessingUnit(&sleeper_unit3, number_of_threads * unit3_threads, static_cast<void *>(d3));
-  printf("\tStage 3 - sleep time %d, number of threads %d\n", *d3, number_of_threads * unit3_threads);
-  pipe->AddProcessingUnit(&sleeper_unit4, number_of_threads * unit4_threads, static_cast<void *>(d1));
-  printf("\tStage 4 - sleep time %d, number of threads %d\n", *d1, number_of_threads * unit4_threads);
+  Pipeline *pipe = new Pipeline(&void_unit, data_queue, 1, debug_flag, profiling);
+    pipe->AddProcessingUnit(&drano_unit[0], 1 , static_cast<void*>(&adaptable));
+  pipe->AddProcessingUnit(&sleeper_unit[0], number_of_threads * threads[0], static_cast<void *>(&sleepTime[0]));
+  int di = 1;
+  for (int i = 1; i < stages; ++i) {
+    printf("\tStage %d - sleep time %d, number of threads %d\n", i, sleepTime[i], number_of_threads * threads[i]);
+    pipe->AddProcessingUnit(&drano_unit[di++], 1 , static_cast<void*>(&adaptable));
+    pipe->AddProcessingUnit(&sleeper_unit[i], number_of_threads * threads[i], static_cast<void *>(&sleepTime[i]));
+  }
   pipe->RunPipe();
 
   std::vector<int> sleeps = {5, 8, 1, 3, 7, 3, 3, 1, 1, 1, 1, 8, 5, 9, 2, 3, 1};
 
   printf("Processing %d data items\n", number_of_data_items);
-  
+
   int *val, *oldVal;
   pipeData *data;
 
   for (int i = 0; i < number_of_data_items; ++i)
   {
-    if (debug_flag)
-    {
-      printf("(main) Popping from IN\n");
-    }
-    data = (pipeData *)data_in->PopFromIn();
-    //    val = distribution(gen);
-    val = static_cast<int *>(data->GetExtraData(sleeper_unit1.getKey()));
-    *val = sleeps[i % sleeps.size()];
-    /*oldVal = static_cast<int *>(data->ResetExtraData((void *)val, sleeper_unit1.getKey())); // Used in case the element size changes
-    if (oldVal != nullptr)
-    {*/
-      std::cout << "Sending item " << i << " with a " << (int)*val << " sleep" << std::endl;
-    /*  delete oldVal;
-    }
-    else
-    {
-      std::cout << "oldVal = nullptr" << std::endl;
-      std::cout << "Sending item" << i << " using init time for sleep" << std::endl;
-    }*/
-    if (debug_flag)
-    {
-      printf("(main) Pushing into OUT \n");
-    }
-    data_in->PushIntoOut((void *)data);
+    data = (pipeData *)data_queue->PopFromIn();
+    //  std::cout << "IN FOR LOOP LINE " << __LINE__ << std::endl;
+
+    val = static_cast<int *>(data->GetExtraData(sleeper_unit[0].getKey()));
+    *val = distribution(gen);
+    //    *val = sleeps[i % sleeps.size()];
+    std::cout << "Sending item " << i << " with a " << (int)*val << " sleep" << std::endl;
+    //  std::cout << "Sending item " << i << std::endl;
+
+    data_queue->PushIntoOut((void *)data);
   }
 
   std::cout << "Waiting for pipe to drain ..." << std::endl;

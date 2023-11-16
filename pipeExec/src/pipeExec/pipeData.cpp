@@ -83,7 +83,7 @@ void *pipeData::GetExtraData(std::string key) {
 /// @param newData The value to be stored
 /// @param key The key that identifies the data element 
 /// @return The old value or nullptr if the key is not found
-void *pipeData::ResetExtraData(void *newData, std::string key) {
+void *pipeData::resetExtraData(std::string key, void *newData) {
 
   void *oldData;
 

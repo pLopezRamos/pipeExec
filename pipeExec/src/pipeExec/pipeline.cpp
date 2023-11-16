@@ -1,7 +1,9 @@
 #include "pipeline.h"
+#include "pipeData.h"
 
 #include <cstdio>
 #include <string>
+#include <iostream>
 
 /**
  * @brief Constructor for the Pipeline class
@@ -108,9 +110,37 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
   processing_unit->Init(node->extra_args());
 
   try {
+    auto terminate = false;
     do {
       data = node->in_data_queue()->PopFromOut();
+      auto pData = (pipeData*)data;
+      if ( pData->isKey("_#pipeExecd#node#control#_") ) {
+        auto pcmd = static_cast<unsigned int*>(pData->GetExtraData("_#pipeExecd#node#control#_"));
+        unsigned int cmd = *pcmd;
+        switch ( cmd ) {
+          case 0: //std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
+            break;
+          case 1: //std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
+            mtx.lock();
+            *pcmd = 0; // Set the command to the null command
+            node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), debug, profiling));
+            node->number_of_instances(node->number_of_instances() + 1);
+            std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
+            break;
+          case 2: std::cout << "NODE = " << node->node_id() << " Decrement processing unit instances - cmd = " << cmd << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
+                  mtx.lock();
+                  *pcmd = 0;
+                  if ( node->number_of_instances() > 1 ) { terminate = true;
+                    node->number_of_instances(node->number_of_instances() - 1);
+                  }
+                  else std::cout << "LAST THREAD - IGNORING TERMINATION " << std::endl;
+                  mtx.unlock();
+                  break;
+          default: std::cout << "Command id " << cmd << "not implemented." << std::endl;
+        }
+      }
 
+      pData->setNodeData(node);
       // Runs the processing_unit
       processing_unit->Run(data);
 
@@ -130,8 +160,8 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
         }
         prof.unlock();
       }
-    } while (true);
-
+    } while ( ! terminate );
+    std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
   } catch (...) {
   }
   processing_unit->End();
@@ -171,7 +201,7 @@ void Pipeline::WaitFinish() {
   while (execution_list_[0]->in_data_queue()->in_queue_count() !=
       execution_list_[0]->in_data_queue()->max_size()) {
     execution_list_[0]->in_data_queue()->wait_finish();
-  };
+  }
 }
 
 void Pipeline::Profile() {

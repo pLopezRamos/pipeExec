@@ -33,6 +33,9 @@
 #define PIPEDATA_H
 
 #include "memory_manager.h"
+//#include "pipe_node.h"
+
+class PipeNode; // Forward defintion
 
 /**
  * @class pipeData
@@ -45,52 +48,57 @@
  * creation of the class.
  */
 class pipeData {
- public:
-  /**
-   * @brief This structure works like a std::pair but its member names are
-   * meaningful and are used to store data paired to a particular key.
-   */
-  struct DataKey {
-    std::string key; /**< The key used to find the data associated */
-    void *data;      /**< The extra data stored*/
-  };
+  public:
+    /**
+     * @brief This structure works like a std::pair but its member names are
+     * meaningful and are used to store data paired to a particular key.
+     */
+    struct DataKey {
+      std::string key; /**< The key used to find the data associated */
+      void *data;      /**< The extra data stored*/
+    };
 
-  /**
-   * @brief Set the DataKey structure to the given key and data
-   *
-   * @return True if the key is unique and flase otherwise.
-   */
-  bool setDataKey(std::string key, void *data);
+    /**
+     * @brief Set the DataKey structure to the given key and data
+     *
+     * @return True if the key is unique and flase otherwise.
+     */
+    bool setDataKey(std::string key, void *data);
 
-  /**
-   * @brief Check if the given key exists in the pipeData object
-   *
-   * @return True if the key exists, false otgherwise
-   */
-  bool isKey(std::string key);
+    /**
+     * @brief Check if the given key exists in the pipeData object
+     *
+     * @return True if the key exists, false otgherwise
+     */
+    bool isKey(std::string key);
 
-  // The data constructor
-  pipeData(void *, bool = false);
+    // The data constructor
+    pipeData(void *, bool = false);
 
-  // The data destructor
-  ~pipeData();
+    // The data destructor
+    ~pipeData();
 
-  // Pushes the struct {key, data} to the extra data allocator
-  void PushExtraData(DataKey *);
+    // Pushes the struct {key, data} to the extra data allocator
+    void PushExtraData(DataKey *);
 
-  // Gets the pointer to the extra data so you can manipulate it
-  void *GetExtraData(std::string);
+    // Gets the pointer to the extra data so you can manipulate it
+    void *GetExtraData(std::string);
 
-  // Gets the initial data stored in the class
-  void *data();
+    // Gets the initial data stored in the class
+    void *data();
 
-void *ResetExtraData(void *newData, std::string key);
+    void *resetExtraData(std::string key, void *newData);
 
- private:
-  void *data_;
-  unsigned int index_;
-  std::vector<DataKey *> extra_data_;
-  bool debug_;
+    PipeNode *getNodeData() { return node; };
+
+    void setNodeData(PipeNode *nodeData) { node = nodeData; };
+
+  private:
+    void *data_;
+    unsigned int index_;
+    std::vector<DataKey *> extra_data_;
+    bool debug_;
+    PipeNode *node;
 };
 
 #endif

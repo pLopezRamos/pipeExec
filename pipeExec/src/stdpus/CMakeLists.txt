@@ -5,6 +5,7 @@ add_library(stdpus
 	number_printer.cpp
 	simple_indexer.cpp
 	sleeper.cpp
+  drano.cpp
 )
 
 # Set the include directories
@@ -31,6 +32,7 @@ install(FILES
 	number_printer.h
 	simple_indexer.h
 	sleeper.h
+  drano.h
 
 	DESTINATION include/stdpus
 )

@@ -33,6 +33,7 @@
 #define ADDER_H
 
 #include "pipeExec.h"
+#include <iostream>
 
 /**
  * @class Adder
@@ -42,7 +43,9 @@
 class Adder : public ProcessingUnitInterface {
   public:
 
-    void Init(void *data) override;
+    Adder() { setKey("_#std#adder#_"); };
+
+    void Init(void *data = nullptr) override;
 
     // Adds one to the integer pointer by the data pointer
     void Run(void *data) override;
