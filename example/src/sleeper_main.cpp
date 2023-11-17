@@ -29,14 +29,14 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 {
   Sleeper sleeper_unit[4];
   Drano drano_unit[4];
-  int threads[4] = { 1, 1, 1, 1};
+  int threads[4] = { 10, 10, 10, 10};
   int sleepTime[4] = { 1, 9 , 3, 1 };
   int stages = 4;
   bool adaptable = true;
 
   NullUnit void_unit;
   int allocated_memory;
-  int number_of_data_items = 100;
+  int number_of_data_items = 1000;
   int number_of_threads = 1;
   int total_threads = threads[0];
   for (int i = 1; i  < stages; ++i)
@@ -51,7 +51,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   std::mt19937 gen(rd());
 
   // Define a distribution for the range of numbers you want
-  std::uniform_int_distribution<int> distribution(1, 10); // Generates numbers between 1 and 10
+  std::uniform_int_distribution<int> distribution(5, 7); // Generates numbers between 1 and 10
 
   if (total_threads > number_of_data_items)
     allocated_memory = number_of_data_items + 1;
@@ -59,13 +59,12 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
     allocated_memory = total_threads + 1;
 
   allocated_memory = 10;
-  //  allocated_memory *= stages; // the number of stages
+  allocated_memory *= stages; // the number of stages
   printf("Running %d stage pipe using queue size = %d\n", stages, allocated_memory);
 
   MemoryManager *data_queue = new MemoryManager(allocated_memory, debug_flag);
   for (int i = 0; i < allocated_memory; ++i)
   {
-//    pipeData *holder = new pipeData(new int(0));
     pipeData *holder = new pipeData(nullptr);
     holder->PushExtraData(new pipeData::DataKey{sleeper_unit[0].getKey(), static_cast<void*>(new int(0))});
     holder->PushExtraData(new pipeData::DataKey{"profiling", &profiling});
@@ -73,13 +72,14 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   }
 
   Pipeline *pipe = new Pipeline(&void_unit, data_queue, 1, debug_flag, profiling);
-    pipe->AddProcessingUnit(&drano_unit[0], 1 , static_cast<void*>(&adaptable));
-  pipe->AddProcessingUnit(&sleeper_unit[0], number_of_threads * threads[0], static_cast<void *>(&sleepTime[0]));
+  pipe->AddProcessingUnit(&drano_unit[0], 1 , static_cast<void*>(&adaptable));
+  pipe->AddProcessingUnit(&sleeper_unit[0], number_of_threads * threads[0], static_cast<void *>(&sleepTime[0]), 15, 5);
+    printf("\tStage %d - sleep time %d, number of threads %d\n", 0, sleepTime[0], number_of_threads * threads[0]);
   int di = 1;
   for (int i = 1; i < stages; ++i) {
     printf("\tStage %d - sleep time %d, number of threads %d\n", i, sleepTime[i], number_of_threads * threads[i]);
     pipe->AddProcessingUnit(&drano_unit[di++], 1 , static_cast<void*>(&adaptable));
-    pipe->AddProcessingUnit(&sleeper_unit[i], number_of_threads * threads[i], static_cast<void *>(&sleepTime[i]));
+    pipe->AddProcessingUnit(&sleeper_unit[i], number_of_threads * threads[i], static_cast<void *>(&sleepTime[i]), 15, 5);
   }
   pipe->RunPipe();
 
@@ -93,13 +93,10 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   for (int i = 0; i < number_of_data_items; ++i)
   {
     data = (pipeData *)data_queue->PopFromIn();
-    //  std::cout << "IN FOR LOOP LINE " << __LINE__ << std::endl;
-
     val = static_cast<int *>(data->GetExtraData(sleeper_unit[0].getKey()));
     *val = distribution(gen);
     //    *val = sleeps[i % sleeps.size()];
     std::cout << "Sending item " << i << " with a " << (int)*val << " sleep" << std::endl;
-    //  std::cout << "Sending item " << i << std::endl;
 
     data_queue->PushIntoOut((void *)data);
   }
@@ -116,7 +113,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 int main()
 {
 
-  SleeperMain(false, false, false);
+  SleeperMain(false, false, true);
 
   exit(0);
 }

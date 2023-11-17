@@ -71,6 +71,8 @@ class PipeNode {
 
   // Gets the number of instances of the current node
   int number_of_instances();
+  int max_instances();
+  int min_instances();
 
   // Gets the ID of the current node
   int node_id();
@@ -96,6 +98,8 @@ class PipeNode {
 
   // Sets the number of instances of the current node
   void number_of_instances(int);
+  void max_instances(int);
+  void min_instances(int);
 
   // Sets the ID of the current node
   void node_id(int);
@@ -106,9 +110,13 @@ class PipeNode {
   // Sets the extra_args
   void extra_args(void *);
 
+  std::mutex ctl_mtx;
+
  private:
   int node_id_;             /**< Id of the node */
   int number_of_instances_; /**< Number of instances of the processing unit */
+  int max_instances_;       // The maximun number of instances allowed - 0 = no limit
+  int min_instances_;       // The maximun number of instances allowed
   MemoryManager *in_data_queue_;  /**< Pointer to the input data queue */
   MemoryManager *out_data_queue_; /**< Pointer to the output data queue */
   ProcessingUnitInterface

@@ -43,7 +43,7 @@ Pipeline::~Pipeline() {}
  * node.
  * @param A pointer to a data object
  */
-void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit, int instances, void *startData) {
+void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit, int instances, void *startData, int max_instances, int min_instances) {
 
   PipeNode *new_node = new PipeNode;
 
@@ -59,6 +59,8 @@ void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit, int i
   new_node->last_node(true);
   new_node->processing_unit(processing_unit);
   new_node->number_of_instances(instances);
+  new_node->max_instances(max_instances);
+  new_node->min_instances(min_instances);
   execution_list_.push_back(new_node);
   ++node_number_;
 }
@@ -113,34 +115,37 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
     auto terminate = false;
     do {
       data = node->in_data_queue()->PopFromOut();
+      node->ctl_mtx.lock();
       auto pData = (pipeData*)data;
       if ( pData->isKey("_#pipeExecd#node#control#_") ) {
-        auto pcmd = static_cast<unsigned int*>(pData->GetExtraData("_#pipeExecd#node#control#_"));
-        unsigned int cmd = *pcmd;
+        auto pcmd = static_cast<Pipeline::nodeCmd*>(pData->GetExtraData("_#pipeExecd#node#control#_"));
+        Pipeline::nodeCmd cmd = *pcmd;
         switch ( cmd ) {
-          case 0: //std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
+          case Pipeline::nodeCmd::NO_OP:// std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
             break;
-          case 1: //std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
-            mtx.lock();
-            *pcmd = 0; // Set the command to the null command
-            node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), debug, profiling));
-            node->number_of_instances(node->number_of_instances() + 1);
-            std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
+          case Pipeline::nodeCmd::ADD_THR:// std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
+            if ( node->max_instances() == 0 || node->max_instances() > node->number_of_instances() ) {
+              mtx.lock();
+              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), debug, profiling));
+              node->number_of_instances(node->number_of_instances() + 1);
+              std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
+            }
             break;
-          case 2: std::cout << "NODE = " << node->node_id() << " Decrement processing unit instances - cmd = " << cmd << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
-                  mtx.lock();
-                  *pcmd = 0;
-                  if ( node->number_of_instances() > 1 ) { terminate = true;
-                    node->number_of_instances(node->number_of_instances() - 1);
-                  }
-                  else std::cout << "LAST THREAD - IGNORING TERMINATION " << std::endl;
-                  mtx.unlock();
-                  break;
+          case Pipeline::nodeCmd::END_THR:// std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
+            if ( node->min_instances() == 0 || node->min_instances() < node->number_of_instances() ) {
+              if ( node->number_of_instances() > 1 ) { terminate = true;
+                node->number_of_instances(node->number_of_instances() - 1);
+              }
+            }
+            break;
           default: std::cout << "Command id " << cmd << "not implemented." << std::endl;
-        }
+        } 
+        *pcmd = Pipeline::nodeCmd::NO_OP;
       }
 
       pData->setNodeData(node);
+      node->ctl_mtx.unlock();
+
       // Runs the processing_unit
       processing_unit->Run(data);
 

@@ -73,6 +73,8 @@ ProcessingUnitInterface *PipeNode::processing_unit() { return processing_unit_; 
  * @return The number of instances of the current node
  */
 int PipeNode::number_of_instances() { return number_of_instances_; }
+int PipeNode::max_instances() { return max_instances_; }
+int PipeNode::min_instances() { return min_instances_; }
 
 /**
  * @brief Gets the ID of the current node
@@ -133,6 +135,8 @@ void PipeNode::processing_unit(ProcessingUnitInterface *processing_unit) { proce
  * @param number_of_instances The number of instances of the current node
  */
 void PipeNode::number_of_instances(int instances_number) { number_of_instances_ = instances_number; }
+void PipeNode::max_instances(int max_instances_number) { max_instances_ = max_instances_number; }
+void PipeNode::min_instances(int min_instances_number) { min_instances_ = min_instances_number; }
 
 /**
  * @brief Sets the ID of the current node

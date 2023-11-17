@@ -257,8 +257,9 @@ int MemoryManager::max_size() const { return max_size_; }
  * @param data Pointer to the memory buffer.
  */
 void MemoryManager::LoadMemoryManager(void *data) {
-  PushIntoOut(data);          // Should be just a PushIntoIn(data) CHECK
-  PushIntoIn(PopFromOut());
+//  PushIntoOut(data);          // Should be just a PushIntoIn(data) CHECK
+//  PushIntoIn(PopFromOut());
+  PushIntoIn(data);
 }
 
 /**
