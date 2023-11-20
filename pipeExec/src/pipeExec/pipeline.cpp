@@ -26,6 +26,8 @@ Pipeline::Pipeline(ProcessingUnitInterface *first_function, MemoryManager *data_
     first_node->in_data_queue(data_in);
     first_node->processing_unit(first_function);
     first_node->number_of_instances(threads_per_node_);
+    first_node->setPrev(nullptr);
+    first_node->setCmd(PipeNode::nodeCmd::NO_OP);
 
     execution_list_.push_back(first_node);
     ++node_number_;
@@ -61,6 +63,8 @@ void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit, int i
   new_node->number_of_instances(instances);
   new_node->max_instances(max_instances);
   new_node->min_instances(min_instances);
+  new_node->setPrev(execution_list_[prev_idx]);
+  new_node->setCmd(PipeNode::nodeCmd::NO_OP);
   execution_list_.push_back(new_node);
   ++node_number_;
 }
@@ -83,6 +87,8 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
 
   void *data = nullptr;
   ProcessingUnitInterface *processing_unit = node->processing_unit();
+
+  //std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   if (id != 0) {
     processing_unit = node->processing_unit()->Clone();
@@ -115,39 +121,52 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
     auto terminate = false;
     do {
       data = node->in_data_queue()->PopFromOut();
-      node->ctl_mtx.lock();
       auto pData = (pipeData*)data;
-      if ( pData->isKey("_#pipeExecd#node#control#_") ) {
-        auto pcmd = static_cast<Pipeline::nodeCmd*>(pData->GetExtraData("_#pipeExecd#node#control#_"));
-        Pipeline::nodeCmd cmd = *pcmd;
-        switch ( cmd ) {
-          case Pipeline::nodeCmd::NO_OP:// std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
-            break;
-          case Pipeline::nodeCmd::ADD_THR:// std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
-            if ( node->max_instances() == 0 || node->max_instances() > node->number_of_instances() ) {
-              mtx.lock();
-              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), debug, profiling));
-              node->number_of_instances(node->number_of_instances() + 1);
-              std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
-            }
-            break;
-          case Pipeline::nodeCmd::END_THR:// std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
-            if ( node->min_instances() == 0 || node->min_instances() < node->number_of_instances() ) {
-              if ( node->number_of_instances() > 1 ) { terminate = true;
-                node->number_of_instances(node->number_of_instances() - 1);
+      auto pnode = node->getPrev();
+      if ( pnode != nullptr ) {
+      node->ctl_mtx.lock();
+        pnode->ctl_mtx.lock();
+        auto cmd = pnode->getCmd();
+        while ( cmd != PipeNode::nodeCmd::EMPTY ) {
+          switch ( cmd ) {
+            case PipeNode::nodeCmd::NO_OP: //std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
+              break;
+            case PipeNode::nodeCmd::ADD_THR: //std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
+              if ( node->max_instances() == 0 || node->max_instances() > node->number_of_instances() ) {
+      node->ctl_mtx.unlock();
+                mtx.lock();
+                node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), debug, profiling));
+                node->number_of_instances(node->number_of_instances() + 1);
               }
-            }
-            break;
-          default: std::cout << "Command id " << cmd << "not implemented." << std::endl;
-        } 
-        *pcmd = Pipeline::nodeCmd::NO_OP;
+              break;
+            case PipeNode::nodeCmd::END_THR: //std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
+              if ( node->min_instances() == 0 || node->min_instances() < node->number_of_instances() ) {
+                if ( node->number_of_instances() > 1 ) { terminate = true;
+                  node->number_of_instances(node->number_of_instances() - 1);
+                }
+              }
+              break;
+            default: std::cout << "Command id " << cmd << "not implemented." << std::endl;
+                     cmd = pnode->getCmd();
+          }
+          //      pnode->setCmd(PipeNode::nodeCmd::NO_OP);
+        cmd = pnode->getCmd();
+        }
+      node->ctl_mtx.unlock();
+
+        pnode->ctl_mtx.unlock();
       }
 
+      std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
+
       pData->setNodeData(node);
-      node->ctl_mtx.unlock();
 
       // Runs the processing_unit
       processing_unit->Run(data);
+
+      //std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
+      if ( terminate )
+        processing_unit->End(data);
 
       if (node->last_node()) {
         node->out_data_queue()->PushIntoIn(data);
@@ -166,10 +185,8 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
         prof.unlock();
       }
     } while ( ! terminate );
-    std::cout << "NODE " << node->node_id() << " NUMBER OF INSTANCES = " << node->number_of_instances() << std::endl;
   } catch (...) {
   }
-  processing_unit->End();
 }
 
 /**

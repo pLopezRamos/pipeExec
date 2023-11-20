@@ -10,21 +10,6 @@
 
 #include <cstdio>
 
-/**
- * @brief Default constructor for PipeNode
- */
-PipeNode::PipeNode() {}
-
-/**
- * @brief Destructor for PipeNode
- * @details Joins all the running threads
- */
-PipeNode::~PipeNode() {
-
-  for (auto& thread : running_threads_) {
-    thread->join();
-  }
-}
 
 /**
  * @brief Signals the end of the node's work
@@ -75,6 +60,16 @@ ProcessingUnitInterface *PipeNode::processing_unit() { return processing_unit_; 
 int PipeNode::number_of_instances() { return number_of_instances_; }
 int PipeNode::max_instances() { return max_instances_; }
 int PipeNode::min_instances() { return min_instances_; }
+PipeNode::nodeCmd PipeNode::getCmd() {
+  if ( cmd_.empty() )
+    return PipeNode::nodeCmd::EMPTY;
+  else {
+    auto cmd = cmd_.back();
+    cmd_.pop_back();
+    return cmd; }
+}
+
+PipeNode* PipeNode::getPrev() { return prev_; };
 
 /**
  * @brief Gets the ID of the current node
@@ -137,6 +132,8 @@ void PipeNode::processing_unit(ProcessingUnitInterface *processing_unit) { proce
 void PipeNode::number_of_instances(int instances_number) { number_of_instances_ = instances_number; }
 void PipeNode::max_instances(int max_instances_number) { max_instances_ = max_instances_number; }
 void PipeNode::min_instances(int min_instances_number) { min_instances_ = min_instances_number; }
+void PipeNode::setCmd(PipeNode::nodeCmd cmd) { cmd_.push_back(cmd); }
+void PipeNode::setPrev(PipeNode* prev) { prev_ = prev; }
 
 /**
  * @brief Sets the ID of the current node

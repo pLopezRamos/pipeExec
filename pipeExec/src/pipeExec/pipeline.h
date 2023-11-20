@@ -52,7 +52,6 @@ class Pipeline {
       kBadArgumentType,
     };
 
-    enum nodeCmd { NO_OP, ADD_THR, END_THR };
     /**
      * @brief This struct holds the information needed for the profiling of the
      * processing unit

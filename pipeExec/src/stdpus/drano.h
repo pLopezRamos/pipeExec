@@ -80,6 +80,7 @@ class Drano : public ProcessingUnitInterface {
 private:
 
   unsigned int lastCount_;
+  unsigned int ignoreCount_;
   bool adaptable_;
 };
 

@@ -47,7 +47,7 @@ class Indexer : public ProcessingUnitInterface {
 
   void Init(void * = nullptr) override;
   void Run(void *) override;
-  void End() override;
+  void End(void*) override;
   ProcessingUnitInterface *Clone() override;
 
  private:

@@ -46,85 +46,102 @@
  * previous and next nodes. Each node is executed in its own thread.
  */
 class PipeNode {
- public:
-  // Default constructor for PipeNode
-  PipeNode();
+  public:
 
-  // Destructor for PipeNode
-  ~PipeNode();
+    enum nodeCmd { NO_OP, ADD_THR, END_THR, EMPTY };
 
-  // This method signals the end of the node's work, and ensures that all
-  // threads have finished execution before returning.
-  void EndNodeWork();
+    // Default constructor for PipeNode
+    PipeNode() { setCmd(NO_OP); setPrev(nullptr); };
 
-  // Gets the input memory manager of the current node
-  MemoryManager *in_data_queue();
+    /**
+     * @brief Destructor for PipeNode
+     * @details Joins all the running threads
+     */
+    ~PipeNode() {
 
-  // Gets the output memory manager of the current node
-  MemoryManager *out_data_queue();
+      for (auto& thread : running_threads_) {
+        thread->join();
+      }
+    }
 
-  // @brief Gets whether the current node is the last node in the pipeline
-  bool last_node();
+    // This method signals the end of the node's work, and ensures that all
+    // threads have finished execution before returning.
+    void EndNodeWork();
 
-  // Gets the processing unit of the current node
-  ProcessingUnitInterface *processing_unit();
+    // Gets the input memory manager of the current node
+    MemoryManager *in_data_queue();
 
-  // Gets the number of instances of the current node
-  int number_of_instances();
-  int max_instances();
-  int min_instances();
+    // Gets the output memory manager of the current node
+    MemoryManager *out_data_queue();
 
-  // Gets the ID of the current node
-  int node_id();
+    // @brief Gets whether the current node is the last node in the pipeline
+    bool last_node();
 
-  // Gets a vector of running threads for the current node
-  std::vector<std::thread *> &running_threads();
+    // Gets the processing unit of the current node
+    ProcessingUnitInterface *processing_unit();
 
-  // Gets the pointer to the extra_args
-  void *extra_args();
+    // Gets the number of instances of the current node
+    int number_of_instances();
+    int max_instances();
+    int min_instances();
+    nodeCmd getCmd();
+    PipeNode* getPrev();
 
-  // Sets the input memory manager of the current node
-  void in_data_queue(MemoryManager *);
+    // Gets the ID of the current node
+    int node_id();
 
-  // Sets the output memory manager of the current node
-  void out_data_queue(MemoryManager *);
+    // Gets a vector of running threads for the current node
+    std::vector<std::thread *> &running_threads();
 
-  // Sets the boolean indicating if the node is the last in the
-  // pipeline
-  void last_node(bool);
+    // Gets the pointer to the extra_args
+    void *extra_args();
 
-  // Sets the processing unit of the node
-  void processing_unit(ProcessingUnitInterface *);
+    // Sets the input memory manager of the current node
+    void in_data_queue(MemoryManager *);
 
-  // Sets the number of instances of the current node
-  void number_of_instances(int);
-  void max_instances(int);
-  void min_instances(int);
+    // Sets the output memory manager of the current node
+    void out_data_queue(MemoryManager *);
 
-  // Sets the ID of the current node
-  void node_id(int);
+    // Sets the boolean indicating if the node is the last in the
+    // pipeline
+    void last_node(bool);
 
-  // Pushes the thread to the list of running threads
-  void PushThread(std::thread *);
+    // Sets the processing unit of the node
+    void processing_unit(ProcessingUnitInterface *);
 
-  // Sets the extra_args
-  void extra_args(void *);
+    // Sets the number of instances of the current node
+    void number_of_instances(int);
+    void max_instances(int);
+    void min_instances(int);
+    void setCmd(nodeCmd);
+    void setPrev(PipeNode*);
 
-  std::mutex ctl_mtx;
+    // Sets the ID of the current node
+    void node_id(int);
 
- private:
-  int node_id_;             /**< Id of the node */
-  int number_of_instances_; /**< Number of instances of the processing unit */
-  int max_instances_;       // The maximun number of instances allowed - 0 = no limit
-  int min_instances_;       // The maximun number of instances allowed
-  MemoryManager *in_data_queue_;  /**< Pointer to the input data queue */
-  MemoryManager *out_data_queue_; /**< Pointer to the output data queue */
-  ProcessingUnitInterface
+    // Pushes the thread to the list of running threads
+    void PushThread(std::thread *);
+
+    // Sets the extra_args
+    void extra_args(void *);
+
+    std::mutex ctl_mtx;
+
+  private:
+    int node_id_;             /**< Id of the node */
+    int number_of_instances_; /**< Number of instances of the processing unit */
+    int max_instances_;       // The maximun number of instances allowed - 0 = no limit
+    int min_instances_;       // The maximun number of instances allowed
+    MemoryManager *in_data_queue_;  /**< Pointer to the input data queue */
+    MemoryManager *out_data_queue_; /**< Pointer to the output data queue */
+    ProcessingUnitInterface
       *processing_unit_; /**< Pointer to the ProcessingUnit to use */
-  bool is_last_node_;    /**< True if it's the last node */
-  std::vector<std::thread *>
+    bool is_last_node_;    /**< True if it's the last node */
+    std::vector<std::thread *>
       running_threads_; /**< The list with the running threads */
-  void *extra_args_;
+    void *extra_args_;
+    PipeNode* prev_; 
+    std::vector<nodeCmd> cmd_;
 };
 
 #endif

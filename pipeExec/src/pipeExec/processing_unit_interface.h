@@ -63,7 +63,7 @@ public:
    * method
    */
   //  virtual void End() = 0;
-  virtual void End() { return; };
+  virtual void End(void *data = nullptr) { return; };
 
   /**
    * @brief Returns new pointer to a processing unit class. Use {return new

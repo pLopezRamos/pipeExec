@@ -85,7 +85,7 @@ void Indexer::Run(void *data) {
 /**
  * @desc Frees the memory of the Indexer
  */
-void Indexer::End() { free(lookup_table_); }
+void Indexer::End(void* data) { free(lookup_table_); }
 
 /**
  * @desc This function clones the Indexer
