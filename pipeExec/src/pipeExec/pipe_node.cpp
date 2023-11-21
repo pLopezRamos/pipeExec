@@ -70,6 +70,7 @@ PipeNode::nodeCmd PipeNode::getCmd() {
 }
 
 PipeNode* PipeNode::getPrev() { return prev_; };
+PipeNode* PipeNode::getNext() { return next_; };
 
 /**
  * @brief Gets the ID of the current node
@@ -134,6 +135,7 @@ void PipeNode::max_instances(int max_instances_number) { max_instances_ = max_in
 void PipeNode::min_instances(int min_instances_number) { min_instances_ = min_instances_number; }
 void PipeNode::setCmd(PipeNode::nodeCmd cmd) { cmd_.push_back(cmd); }
 void PipeNode::setPrev(PipeNode* prev) { prev_ = prev; }
+void PipeNode::setNext(PipeNode* next) { next_ = next; }
 
 /**
  * @brief Sets the ID of the current node

@@ -27,6 +27,7 @@ Pipeline::Pipeline(ProcessingUnitInterface *first_function, MemoryManager *data_
     first_node->processing_unit(first_function);
     first_node->number_of_instances(threads_per_node_);
     first_node->setPrev(nullptr);
+    first_node->setNext(first_node);
     first_node->setCmd(PipeNode::nodeCmd::NO_OP);
 
     execution_list_.push_back(first_node);
@@ -64,6 +65,7 @@ void Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit, int i
   new_node->max_instances(max_instances);
   new_node->min_instances(min_instances);
   new_node->setPrev(execution_list_[prev_idx]);
+  new_node->getPrev()->setNext(new_node);
   new_node->setCmd(PipeNode::nodeCmd::NO_OP);
   execution_list_.push_back(new_node);
   ++node_number_;

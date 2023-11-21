@@ -86,6 +86,7 @@ class PipeNode {
     int min_instances();
     nodeCmd getCmd();
     PipeNode* getPrev();
+    PipeNode* getNext();
 
     // Gets the ID of the current node
     int node_id();
@@ -115,6 +116,7 @@ class PipeNode {
     void min_instances(int);
     void setCmd(nodeCmd);
     void setPrev(PipeNode*);
+    void setNext(PipeNode*);
 
     // Sets the ID of the current node
     void node_id(int);
@@ -141,6 +143,7 @@ class PipeNode {
       running_threads_; /**< The list with the running threads */
     void *extra_args_;
     PipeNode* prev_; 
+    PipeNode* next_; 
     std::vector<nodeCmd> cmd_;
 };
 
