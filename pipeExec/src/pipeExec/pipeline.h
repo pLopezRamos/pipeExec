@@ -73,14 +73,15 @@ class Pipeline {
       int64_t sys_time_end; /**< The system time at the end of the RunNode function */
     };
     // Constructor for the Pipeline class
-    Pipeline(ProcessingUnitInterface *, MemoryManager *, int, bool = false,
+//    Pipeline(ProcessingUnitInterface *, MemoryManager *, int, bool = false,
+    Pipeline(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, bool = false,
         bool = false);
 
     // Destructor of the Pipeline
     ~Pipeline();
 
     // Adds a new processing unit to the Pipeline
-    void AddProcessingUnit(ProcessingUnitInterface *, int, void * = nullptr, int = 0, int = 0);
+    pipeQueue* AddProcessingUnit(ProcessingUnitInterface *, int, void * = nullptr, int = 2, int = 0, int = 0);
 
     // Runs the pipe making all the threads wait for an input
     int RunPipe();

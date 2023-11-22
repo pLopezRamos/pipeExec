@@ -41,7 +41,7 @@ void Drano::Run(void *data)
   auto pdata = (pipeData*)data;
   auto node = pdata->getNodeData();
   auto outQueue = node->out_data_queue();
-  auto currentCount = outQueue->out_queue_count();
+  auto currentCount = outQueue->queue_count();
   auto maxSize = outQueue->max_size();
   auto cmd = PipeNode::nodeCmd::NO_OP;
 

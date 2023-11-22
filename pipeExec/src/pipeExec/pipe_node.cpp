@@ -28,14 +28,16 @@ void PipeNode::EndNodeWork() {
  *
  * @return A pointer to the input memory manager of the current node
  */
-MemoryManager *PipeNode::in_data_queue() { return in_data_queue_; }
+//MemoryManager *PipeNode::in_data_queue() { return in_data_queue_; }
+pipeQueue *PipeNode::in_data_queue() { return in_data_queue_; }
 
 /**
  * @brief Gets the output memory manager of the current node
  *
  * @return A pointer to the output memory manager of the current node
  */
-MemoryManager *PipeNode::out_data_queue() { return out_data_queue_; }
+//MemoryManager *PipeNode::out_data_queue() { return out_data_queue_; }
+pipeQueue *PipeNode::out_data_queue() { return out_data_queue_; }
 
 /**
  * @brief Gets whether the current node is the last node in the pipeline
@@ -99,7 +101,8 @@ void *PipeNode::extra_args() { return extra_args_; }
  * @param in_data_queue A pointer to the input memory manager of the current
  * node
  */
-void PipeNode::in_data_queue(MemoryManager *data_in) { in_data_queue_ = data_in; }
+//void PipeNode::in_data_queue(MemoryManager *data_in) { in_data_queue_ = data_in; }
+void PipeNode::in_data_queue(pipeQueue *data_in) { in_data_queue_ = data_in; }
 
 /**
  * @brief Sets the output memory manager of the current node
@@ -107,7 +110,8 @@ void PipeNode::in_data_queue(MemoryManager *data_in) { in_data_queue_ = data_in;
  * @param in_data_queue A pointer to the output memory manager of the
  * current node
  */
-void PipeNode::out_data_queue(MemoryManager *data_out) { out_data_queue_ = data_out; }
+//void PipeNode::out_data_queue(MemoryManager *data_out) { out_data_queue_ = data_out; }
+void PipeNode::out_data_queue(pipeQueue *data_out) { out_data_queue_ = data_out; }
 
 /**
  * @brief Sets the boolean indicating if the node is the last in the

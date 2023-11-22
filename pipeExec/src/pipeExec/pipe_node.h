@@ -51,7 +51,8 @@ class PipeNode {
     enum nodeCmd { NO_OP, ADD_THR, END_THR, EMPTY };
 
     // Default constructor for PipeNode
-    PipeNode() { setCmd(NO_OP); setPrev(nullptr); };
+//    PipeNode() { setCmd(NO_OP); setPrev(nullptr); };
+    PipeNode() {};
 
     /**
      * @brief Destructor for PipeNode
@@ -69,10 +70,12 @@ class PipeNode {
     void EndNodeWork();
 
     // Gets the input memory manager of the current node
-    MemoryManager *in_data_queue();
+//    MemoryManager *in_data_queue();
+    pipeQueue *in_data_queue();
 
     // Gets the output memory manager of the current node
-    MemoryManager *out_data_queue();
+//    MemoryManager *out_data_queue();
+    pipeQueue *out_data_queue();
 
     // @brief Gets whether the current node is the last node in the pipeline
     bool last_node();
@@ -98,10 +101,12 @@ class PipeNode {
     void *extra_args();
 
     // Sets the input memory manager of the current node
-    void in_data_queue(MemoryManager *);
+//    void in_data_queue(MemoryManager *);
+    void in_data_queue(pipeQueue *);
 
     // Sets the output memory manager of the current node
-    void out_data_queue(MemoryManager *);
+//    void out_data_queue(MemoryManager *);
+    void out_data_queue(pipeQueue *);
 
     // Sets the boolean indicating if the node is the last in the
     // pipeline
@@ -134,8 +139,10 @@ class PipeNode {
     int number_of_instances_; /**< Number of instances of the processing unit */
     int max_instances_;       // The maximun number of instances allowed - 0 = no limit
     int min_instances_;       // The maximun number of instances allowed
-    MemoryManager *in_data_queue_;  /**< Pointer to the input data queue */
-    MemoryManager *out_data_queue_; /**< Pointer to the output data queue */
+//    MemoryManager *in_data_queue_;  /**< Pointer to the input data queue */
+//    MemoryManager *out_data_queue_; /**< Pointer to the output data queue */
+    pipeQueue *in_data_queue_;  /**< Pointer to the input data queue */
+    pipeQueue *out_data_queue_; /**< Pointer to the output data queue */
     ProcessingUnitInterface
       *processing_unit_; /**< Pointer to the ProcessingUnit to use */
     bool is_last_node_;    /**< True if it's the last node */

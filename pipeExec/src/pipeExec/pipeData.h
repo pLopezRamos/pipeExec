@@ -32,7 +32,8 @@
 #ifndef PIPEDATA_H
 #define PIPEDATA_H
 
-#include "memory_manager.h"
+//#include "memory_manager.h"
+#include "pipeQueue.h"
 //#include "pipe_node.h"
 
 class PipeNode; // Forward defintion

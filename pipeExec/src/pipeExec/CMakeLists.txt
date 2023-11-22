@@ -4,6 +4,7 @@ add_library(pipeExec
 	pipeline.cpp
 	pipe_node.cpp
 	semaphore.cpp
+	pipeQueue.cpp
 )
 
 set(CMAKE_INSTALL_LIB_DIR $HOME/lib)
@@ -25,10 +26,11 @@ install(FILES
 	pipeData.h
 	memory_manager.h
 	pipeline.h
-  pipe_node.h
-  profiling.h
+	pipe_node.h
+	profiling.h
 	processing_unit_interface.h
-  semaphore.h
+	semaphore.h
+	pipeQueue.h
 	DESTINATION include/pipeExec
 	)
 
