@@ -73,7 +73,6 @@ class Pipeline {
       int64_t sys_time_end; /**< The system time at the end of the RunNode function */
     };
     // Constructor for the Pipeline class
-//    Pipeline(ProcessingUnitInterface *, MemoryManager *, int, bool = false,
     Pipeline(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, bool = false,
         bool = false);
 

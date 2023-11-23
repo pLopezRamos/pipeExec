@@ -62,8 +62,8 @@ MemoryManager::MemoryManager(int mx_size, bool debug)
 
     // These semaphores are initialized with counts set to 0
     // and a specified type (kIn or kOut) for synchronization
-    in_semaphore_ = new Semaphore(0, Semaphore::PipeSemaphoreType::kIn, debug_);
-    out_semaphore_ = new Semaphore(0, Semaphore::PipeSemaphoreType::kOut, debug_);
+    in_semaphore_ = new Semaphore(0);
+    out_semaphore_ = new Semaphore(0);
   }
 
 /**

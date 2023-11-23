@@ -67,7 +67,7 @@ void pipeData::PushExtraData(DataKey *extra_data) {
  *
  * @param key The key to lookup in the vector
  */
-void *pipeData::GetExtraData(std::string key) {
+void *pipeData::GetExtraData(std::string key) const {
 
   for (const auto& entry : extra_data_) {
     if (entry->key == key) {
@@ -101,9 +101,9 @@ void *pipeData::resetExtraData(std::string key, void *newData) {
  * @brief Returns the initial stored data inside the class
  * @return The pointer to the data
  */
-void *pipeData::data() { return data_; }
+void *pipeData::data() const { return data_; }
 
-bool pipeData::isKey(std::string key) {
+bool pipeData::isKey(std::string key) const {
   for (const auto& entry : extra_data_) {
     if (entry->key == key) {
       return true;

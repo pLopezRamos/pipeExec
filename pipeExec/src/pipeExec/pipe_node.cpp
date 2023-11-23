@@ -28,16 +28,14 @@ void PipeNode::EndNodeWork() {
  *
  * @return A pointer to the input memory manager of the current node
  */
-//MemoryManager *PipeNode::in_data_queue() { return in_data_queue_; }
-pipeQueue *PipeNode::in_data_queue() { return in_data_queue_; }
+pipeQueue *PipeNode::in_data_queue() const { return in_data_queue_; }
 
 /**
  * @brief Gets the output memory manager of the current node
  *
  * @return A pointer to the output memory manager of the current node
  */
-//MemoryManager *PipeNode::out_data_queue() { return out_data_queue_; }
-pipeQueue *PipeNode::out_data_queue() { return out_data_queue_; }
+pipeQueue *PipeNode::out_data_queue() const { return out_data_queue_; }
 
 /**
  * @brief Gets whether the current node is the last node in the pipeline
@@ -45,23 +43,41 @@ pipeQueue *PipeNode::out_data_queue() { return out_data_queue_; }
  * @return True if the current node is the last node in the pipeline,
  *         false otherwise
  */
-bool PipeNode::last_node() { return is_last_node_; }
+bool PipeNode::last_node() const { return is_last_node_; }
 
 /**
  * @brief Gets the processing unit of the current node
  *
  * @return A pointer to the processing unit of the current node
  */
-ProcessingUnitInterface *PipeNode::processing_unit() { return processing_unit_; }
+ProcessingUnitInterface *PipeNode::processing_unit() const { return processing_unit_; }
 
 /**
  * @brief Gets the number of instances of the current node
  *
  * @return The number of instances of the current node
  */
-int PipeNode::number_of_instances() { return number_of_instances_; }
-int PipeNode::max_instances() { return max_instances_; }
-int PipeNode::min_instances() { return min_instances_; }
+int PipeNode::number_of_instances() const { return number_of_instances_; }
+
+/**
+ * @brief Get the maximum number of proccessing units  instances allowed.
+ *
+ * @return The maximum number of instances.
+ */
+int PipeNode::max_instances() const { return max_instances_; }
+
+/**
+ * @brief Get the minimun number of proccessing units instances allowed.
+ *
+ * @return The minimun number of instances.
+ */
+int PipeNode::min_instances() const { return min_instances_; }
+
+/**
+ * @brief Get the next command in the command queue
+ * 
+ * @return THe next command or EMPTY
+*/
 PipeNode::nodeCmd PipeNode::getCmd() {
   if ( cmd_.empty() )
     return PipeNode::nodeCmd::EMPTY;
@@ -71,8 +87,8 @@ PipeNode::nodeCmd PipeNode::getCmd() {
     return cmd; }
 }
 
-PipeNode* PipeNode::getPrev() { return prev_; };
-PipeNode* PipeNode::getNext() { return next_; };
+PipeNode* PipeNode::getPrev() const { return prev_; };
+PipeNode* PipeNode::getNext() const { return next_; };
 
 /**
  * @brief Gets the ID of the current node
@@ -98,19 +114,15 @@ void *PipeNode::extra_args() { return extra_args_; }
 /**
  * @brief Sets the input memory manager of the current node
  *
- * @param in_data_queue A pointer to the input memory manager of the current
- * node
+ * @param in_data_queue A pointer to the input queue of the current node
  */
-//void PipeNode::in_data_queue(MemoryManager *data_in) { in_data_queue_ = data_in; }
 void PipeNode::in_data_queue(pipeQueue *data_in) { in_data_queue_ = data_in; }
 
 /**
  * @brief Sets the output memory manager of the current node
  *
- * @param in_data_queue A pointer to the output memory manager of the
- * current node
+ * @param out_data_queue A pointer to the output queue of the current node
  */
-//void PipeNode::out_data_queue(MemoryManager *data_out) { out_data_queue_ = data_out; }
 void PipeNode::out_data_queue(pipeQueue *data_out) { out_data_queue_ = data_out; }
 
 /**
@@ -123,22 +135,52 @@ void PipeNode::out_data_queue(pipeQueue *data_out) { out_data_queue_ = data_out;
 void PipeNode::last_node(bool is_last_node) { is_last_node_ = is_last_node; }
 
 /**
- * @brief Sets the processing unit of the node
+ * @brief Sets the processing unit
  *
- * @param ProcessingUnitInterface * - a pointer to the processing
- * unit of the node
+ * @param ProcessingUnitInterface * - a pointer to the processing unit
  */
 void PipeNode::processing_unit(ProcessingUnitInterface *processing_unit) { processing_unit_ = processing_unit; }
+
 /**
- * @brief Sets the number of instances of the current node
+ * @brief Set the number of processing unit instances.
  *
- * @param number_of_instances The number of instances of the current node
+ * @param instances_number The number of instances to be set.
  */
 void PipeNode::number_of_instances(int instances_number) { number_of_instances_ = instances_number; }
-void PipeNode::max_instances(int max_instances_number) { max_instances_ = max_instances_number; }
-void PipeNode::min_instances(int min_instances_number) { min_instances_ = min_instances_number; }
+
+/**
+ * @brief Set the maximun number of processing unit instances.
+ *
+ * @param max_instances maximun number of instances to be set.
+ */
+void PipeNode::max_instances(int max_instances) { max_instances_ = max_instances; }
+
+/**
+ * @brief Set the minumun number of processing unit instances.
+ *
+ * @param min_instances The minumun number of instances to be set.
+ */
+void PipeNode::min_instances(int min_instances) { min_instances_ = min_instances; }
+
+/**
+ * @brief Add a command to the command queue
+ *
+ * @param cmd The command to be added 
+ */
 void PipeNode::setCmd(PipeNode::nodeCmd cmd) { cmd_.push_back(cmd); }
+
+/**
+ * @brief Set a pointer to the previous node.
+ *
+ * @param prev A pointer to the previousnode.
+ */
 void PipeNode::setPrev(PipeNode* prev) { prev_ = prev; }
+
+/**
+ * @brief Set a pointer to the previous node.
+ *
+ * @param prev A pointer to the previousnode.
+ */
 void PipeNode::setNext(PipeNode* next) { next_ = next; }
 
 /**

@@ -15,7 +15,6 @@
  * circular processing to be working.
  *
  */
-//Pipeline::Pipeline(ProcessingUnitInterface *first_function, MemoryManager *data_in, int threads_per_node_, bool debug, bool profiling)
 Pipeline::Pipeline(ProcessingUnitInterface *first_function, pipeQueue *data_in, pipeQueue *data_out, int threads_per_node_, bool debug, bool profiling)
     : debug_(debug), show_profiling_(profiling), node_number_(0)
 {
@@ -24,14 +23,12 @@ Pipeline::Pipeline(ProcessingUnitInterface *first_function, pipeQueue *data_in, 
 
   first_node->node_id(node_number_);
   first_node->last_node(true);
-//  first_node->out_data_queue(data_in);
   first_node->out_data_queue(data_out);
   first_node->in_data_queue(data_in);
   first_node->processing_unit(first_function);
   first_node->number_of_instances(threads_per_node_);
   first_node->setPrev(first_node);
   first_node->setNext(first_node);
-//  first_node->setCmd(PipeNode::nodeCmd::NO_OP);
 
   execution_list_.push_back(first_node);
   ++node_number_;
@@ -58,11 +55,6 @@ pipeQueue* Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit,
 
   int prev_idx = node_number_ - 1;
   execution_list_[prev_idx]->last_node(false);
-//  execution_list_[prev_idx]->out_data_queue(new MemoryManager(execution_list_[0]->in_data_queue()->max_size(), debug_));
-//  execution_list_[prev_idx]->out_data_queue(new pipeQueue(execution_list_[0]->in_data_queue()->max_size(), debug_));
-
- // new_node->out_data_queue(execution_list_[0]->in_data_queue());
- // new_node->in_data_queue(execution_list_[prev_idx]->out_data_queue());
   new_node->node_id(node_number_);
   new_node->last_node(true);
   new_node->processing_unit(processing_unit);
@@ -74,7 +66,6 @@ pipeQueue* Pipeline::AddProcessingUnit(ProcessingUnitInterface *processing_unit,
   new_node->setNext(nullptr);
   new_node->in_data_queue(new_node->getPrev()->out_data_queue());
   new_node->out_data_queue(new pipeQueue(queue_size, debug_));
-//  new_node->setCmd(PipeNode::nodeCmd::NO_OP);
   execution_list_.push_back(new_node);
   ++node_number_;
   return new_node->out_data_queue();
@@ -137,8 +128,7 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
     auto terminate = false;
     do
     {
-//      data = node->in_data_queue()->PopFromOut();
-      data = node->in_data_queue()->PopFromQueue();
+      data = node->in_data_queue()->Pop();
       auto pData = (pipeData *)data;
       auto pnode = node->getPrev();
       if (pnode != node)
@@ -150,9 +140,9 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
         {
           switch (cmd)
           {
-          case PipeNode::nodeCmd::NO_OP:  std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::NO_OP: // std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
             break;
-          case PipeNode::nodeCmd::ADD_THR:  std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::ADD_THR://  std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
             if (node->max_instances() == 0 || node->max_instances() > node->number_of_instances())
             {
               node->ctl_mtx.unlock();
@@ -161,7 +151,7 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
               node->number_of_instances(node->number_of_instances() + 1);
             }
             break;
-          case PipeNode::nodeCmd::END_THR:  std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::END_THR: // std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
             if (node->min_instances() == 0 || node->min_instances() < node->number_of_instances())
             {
               if (node->number_of_instances() > 1)
@@ -175,7 +165,6 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
             std::cout << "Command id " << cmd << "not implemented." << std::endl;
             cmd = pnode->getCmd();
           }
-          //      pnode->setCmd(PipeNode::nodeCmd::NO_OP);
           cmd = pnode->getCmd();
         }
         node->ctl_mtx.unlock();
@@ -194,16 +183,8 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
       if (terminate)
         processing_unit->End(data);
 
-      if (node->last_node())
-      {
-//        node->out_data_queue()->PushIntoIn(data);
-        node->out_data_queue()->PushIntoQueue(data);
-      }
-      else
-      {
-//        node->out_data_queue()->PushIntoOut(data);
-        node->out_data_queue()->PushIntoQueue(data);
-      }
+        node->out_data_queue()->Push(data);
+
       if (profiling)
       {
         prof.lock();
@@ -263,7 +244,6 @@ int Pipeline::RunPipe()
  */
 void Pipeline::WaitFinish()
 {
-//  while (execution_list_[0]->in_data_queue()->in_queue_count() !=
   while (execution_list_[0]->in_data_queue()->queue_count() !=
          execution_list_[0]->in_data_queue()->max_size())
   {

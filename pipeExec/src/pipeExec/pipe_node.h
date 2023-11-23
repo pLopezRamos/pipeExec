@@ -48,10 +48,16 @@
 class PipeNode {
   public:
 
+    /*
+     * List of node commands:
+     * NO_OP - No command to execute.
+     * ADD_THR - Add a new instance of the proccessing unit
+     * END_THR - Delete an instance
+     * EMPTY - No command in queue
+    */
     enum nodeCmd { NO_OP, ADD_THR, END_THR, EMPTY };
 
     // Default constructor for PipeNode
-//    PipeNode() { setCmd(NO_OP); setPrev(nullptr); };
     PipeNode() {};
 
     /**
@@ -67,29 +73,27 @@ class PipeNode {
 
     // This method signals the end of the node's work, and ensures that all
     // threads have finished execution before returning.
-    void EndNodeWork();
+    void EndNodeWork() ;
 
     // Gets the input memory manager of the current node
-//    MemoryManager *in_data_queue();
-    pipeQueue *in_data_queue();
+    pipeQueue *in_data_queue() const;
 
     // Gets the output memory manager of the current node
-//    MemoryManager *out_data_queue();
-    pipeQueue *out_data_queue();
+    pipeQueue *out_data_queue() const;
 
     // @brief Gets whether the current node is the last node in the pipeline
-    bool last_node();
+    bool last_node() const;
 
     // Gets the processing unit of the current node
-    ProcessingUnitInterface *processing_unit();
+    ProcessingUnitInterface *processing_unit() const;
 
     // Gets the number of instances of the current node
-    int number_of_instances();
-    int max_instances();
-    int min_instances();
-    nodeCmd getCmd();
-    PipeNode* getPrev();
-    PipeNode* getNext();
+    int number_of_instances() const;
+    int max_instances() const;
+    int min_instances() const;
+    nodeCmd getCmd() ;
+    PipeNode* getPrev() const;
+    PipeNode* getNext() const;
 
     // Gets the ID of the current node
     int node_id();
@@ -101,12 +105,10 @@ class PipeNode {
     void *extra_args();
 
     // Sets the input memory manager of the current node
-//    void in_data_queue(MemoryManager *);
-    void in_data_queue(pipeQueue *);
+    void in_data_queue(pipeQueue *) ;
 
     // Sets the output memory manager of the current node
-//    void out_data_queue(MemoryManager *);
-    void out_data_queue(pipeQueue *);
+    void out_data_queue(pipeQueue *) ;
 
     // Sets the boolean indicating if the node is the last in the
     // pipeline
@@ -138,9 +140,7 @@ class PipeNode {
     int node_id_;             /**< Id of the node */
     int number_of_instances_; /**< Number of instances of the processing unit */
     int max_instances_;       // The maximun number of instances allowed - 0 = no limit
-    int min_instances_;       // The maximun number of instances allowed
-//    MemoryManager *in_data_queue_;  /**< Pointer to the input data queue */
-//    MemoryManager *out_data_queue_; /**< Pointer to the output data queue */
+    int min_instances_;       // The minumun number of instances allowed
     pipeQueue *in_data_queue_;  /**< Pointer to the input data queue */
     pipeQueue *out_data_queue_; /**< Pointer to the output data queue */
     ProcessingUnitInterface

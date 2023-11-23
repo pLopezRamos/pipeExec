@@ -73,7 +73,7 @@ public:
    */
   virtual ProcessingUnitInterface *Clone() { return nullptr; };
 
-  std::string getKey() { return extraDataKey; };
+  std::string getKey() const { return extraDataKey; };
 
   void setKey(std::string key = "_#STD#NO#KEY#_") { extraDataKey = key; };
 

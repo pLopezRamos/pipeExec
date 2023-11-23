@@ -13,20 +13,7 @@
  * @param type The type of semaphore we're using (in/out/none)
  * @param debug The flag for debug information
  */
-Semaphore::Semaphore(int count, PipeSemaphoreType type, bool debug)
-    : count_(count), debug_(debug) {
-  switch (type) {
-    case PipeSemaphoreType::kNone:
-      type_ = "None";
-      break;
-    case PipeSemaphoreType::kIn:
-      type_ = "In";
-      break;
-    case PipeSemaphoreType::kOut:
-      type_ = "Out";
-      break;
-  }
-}
+Semaphore::Semaphore(int count) : count_(count) { }
 
 /**
  * @brief Destroys the Semaphore object
@@ -44,9 +31,6 @@ void Semaphore::Wait() {
 
   cond_var_.wait(lock, [this] {
     bool result = count_ > 0;
-    if (debug_) {
-      printf("        (SEMAPHORE %s)%s , count: %d\n", type_.c_str(), result ? "PASSED" : "BLOCKED", count_.load() - 1);
-    }
     return result;
   });
   count_--;
@@ -61,9 +45,6 @@ void Semaphore::Wait() {
 void Semaphore::Signal() {
   std::unique_lock<std::mutex> lock(mutex_);
   count_++;
-  if (debug_) {
-    printf("        (SEMAPHORE %s) SIGNAL count: %d\n", type_.c_str(), count_.load());
-  }
   cond_var_.notify_one();
 }
 
@@ -72,6 +53,6 @@ void Semaphore::Signal() {
  *
  * @return int The current count of the semaphore
  */
-int Semaphore::count() { return count_.load(); }
+int Semaphore::count() const { return count_.load(); }
 
 /* vim:set softtabstop=2 shiftwidth=2 tabstop=2 expandtab: */

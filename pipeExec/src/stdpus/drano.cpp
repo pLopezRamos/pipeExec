@@ -53,7 +53,7 @@ void Drano::Run(void *data)
   } else if ( (currentCount <= lastCount_) && adaptable_ )
     cmd = PipeNode::nodeCmd::END_THR;
 
-  std::cout << " SENDING CMD = " << cmd << " ";
+  std::cout << " SENDING CMD = " << cmd << " " << std::endl;
   if ( cmd != PipeNode::nodeCmd::NO_OP ) {
       node->setCmd(cmd);
   }

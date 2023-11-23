@@ -71,7 +71,7 @@ class pipeData {
      *
      * @return True if the key exists, false otgherwise
      */
-    bool isKey(std::string key);
+    bool isKey(std::string key) const;
 
     // The data constructor
     pipeData(void *, bool = false);
@@ -83,10 +83,10 @@ class pipeData {
     void PushExtraData(DataKey *);
 
     // Gets the pointer to the extra data so you can manipulate it
-    void *GetExtraData(std::string);
+    void *GetExtraData(std::string) const;
 
     // Gets the initial data stored in the class
-    void *data();
+    void *data() const;
 
     void *resetExtraData(std::string key, void *newData);
 

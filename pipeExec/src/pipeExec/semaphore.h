@@ -47,24 +47,9 @@
  */
 class Semaphore {
  public:
-  /**
-   * @enum PipeSemaphoreType
-   * @brief Enumerated type for possible semaphore types
-   *
-   * There are three types of Semaphore:
-   * - kNone (No type)
-   * - kIn (IN queue Semaphore)
-   * - kOut (OUT queue Semaphore)
-   */
-  enum PipeSemaphoreType {
-    kNone, /**< Standard semaphore type if not assigned */
-    kIn,   /**< Semaphore for the IN queue inside the MemoryManager */
-    kOut,  /**< Semaphore for the OUT queue inside the MemoryManager */
-  };
 
   // Constructs a new Semaphore object
-  Semaphore(int = 0, PipeSemaphoreType = PipeSemaphoreType::kNone,
-            bool = false);
+  Semaphore(int = 0);
 
   // Destroys the Semaphore object
   ~Semaphore();
@@ -78,7 +63,7 @@ class Semaphore {
   void Signal();
 
   // Returns the current count of the semaphore
-  int count();
+  int count() const;
 
  private:
   std::atomic<int> count_; /**< The count of the semaphore */
