@@ -41,22 +41,28 @@ void Drano::Run(void *data)
   auto pdata = (pipeData*)data;
   auto node = pdata->getNodeData();
   auto outQueue = node->out_data_queue();
-  auto currentCount = outQueue->queue_count();
+  auto inQueue = node->in_data_queue();
+  auto inCount = inQueue->queue_count();
+  auto outCount = outQueue->queue_count();
   auto maxSize = outQueue->max_size();
   auto cmd = PipeNode::nodeCmd::NO_OP;
 
-  std::cout << " node id = " << node->node_id() <<" currentCount = " << currentCount << " lastCount_ " << lastCount_;
+ std::cout << " node id = " << node->node_id() <<" IN = " << inCount << " OUT " << outCount;
 
-  if ( currentCount > lastCount_ ) {
+/*  if ( currentCount > lastCount_ ) {
     cmd = PipeNode::nodeCmd::ADD_THR;
     ignoreCount_ = currentCount;
   } else if ( (currentCount <= lastCount_) && adaptable_ )
-    cmd = PipeNode::nodeCmd::END_THR;
+    cmd = PipeNode::nodeCmd::END_THR;*/
 
-  std::cout << " SENDING CMD = " << cmd << " " << std::endl;
-  if ( cmd != PipeNode::nodeCmd::NO_OP ) {
-      node->setCmd(cmd);
+  if ( outCount > inCount ) cmd = PipeNode::nodeCmd::ADD_THR;
+  else if ( adaptable_ ) {
+      if ( outCount < inCount ) cmd = PipeNode::nodeCmd::END_THR;
   }
 
-  lastCount_ = currentCount;
+  if ( cmd != PipeNode::nodeCmd::NO_OP ) node->setCmd(cmd);
+
+  std::cout << " cmd = " << cmd << std::endl;
+
+  lastCount_ = outCount;
 }

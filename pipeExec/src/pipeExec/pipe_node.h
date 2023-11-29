@@ -134,6 +134,7 @@ class PipeNode {
     // Sets the extra_args
     void extra_args(void *);
 
+    Semaphore* ctl_sema;
     std::mutex ctl_mtx;
 
   private:

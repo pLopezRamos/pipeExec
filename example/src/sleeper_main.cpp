@@ -24,67 +24,77 @@
 #include "null_unit.h"
 #include <random>
 #include <iostream>
+#include <unistd.h> // for linux
 
 int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 {
-  Sleeper sleeper_unit[4];
-  Drano drano_unit[4];
-  int threads[4] = { 1, 1, 1, 1};
-  int sleepTime[4] = { 1, 9 , 3, 1 };
+  Sleeper sleepUnit[4];
+  Drano dranoUnit[4];
+  int thread[4] = {1, 9, 3, 1};
+  int sleepT[4] = {1, 9, 3, 1};
   int stages = 4;
   bool adaptable = false;
 
+//   std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
+
   NullUnit void_unit;
-  int allocated_memory;
   int number_of_data_items = 100;
-  int number_of_threads = 1;
-  int total_threads = threads[0];
-  for (int i = 1; i  < stages; ++i)
-    total_threads += threads[i];
-  total_threads *= number_of_threads;
+  int threadMult = 1;
+  int qSize = 10;
 
-  allocated_memory = 40;
-  printf("Running %d stage pipe using queue size = %d\n", stages, allocated_memory);
+  printf("Running %d stage pipe using queue size = %d\n", stages, qSize);
 
-  pipeQueue *dataIn = new pipeQueue(allocated_memory, debug_flag);
-  pipeQueue *dataOut = new pipeQueue(allocated_memory, debug_flag);
-  Pipeline *pipe = new Pipeline(&void_unit, dataIn, dataOut, 1, debug_flag, profiling);
-  auto fromPipe = pipe->AddProcessingUnit(&sleeper_unit[0], number_of_threads * threads[0], static_cast<void *>(&sleepTime[0]), 2);
-  int di = 0;
-  for (int i = 1; i < stages; ++i) {
-    pipe->AddProcessingUnit(&drano_unit[di++], 1 , static_cast<void*>(&adaptable));
-    printf("\tStage %d - sleep time %d, number of threads %d\n", i, sleepTime[i], number_of_threads * threads[i]);
-    fromPipe = pipe->AddProcessingUnit(&sleeper_unit[i], number_of_threads * threads[i], static_cast<void *>(&sleepTime[i]), 2);
-  }
+  pipeQueue *dataIn = new pipeQueue(qSize, debug_flag);
+  pipeQueue *dataOut = new pipeQueue(qSize, debug_flag);
+  Pipeline *pipe = new Pipeline(new Sleeper, dataIn, dataOut, threadMult * thread[0], static_cast<void *>(&sleepT[0]), profiling);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<void *>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[1], static_cast<void *>(&sleepT[1]), 3, 20, 1);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<void *>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[2], static_cast<void *>(&sleepT[2]), 3, 20, 1);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<void *>(&adaptable), 6);
+  auto node = pipe->AddProcessingUnit(new Sleeper, threadMult * thread[3], static_cast<void *>(&sleepT[3]), 3, 10, 1);
+  auto fromPipe = node->out_data_queue();
   pipe->RunPipe();
 
   printf("Processing %d data items\n", number_of_data_items);
 
   pipeData *data;
-  for (int i = 0; i < allocated_memory; ++i)
+  int dataId;
+  int allocated_memory = 0;
+  for (int i = 0; i < number_of_data_items; ++i)
   {
-    data = new pipeData(nullptr);
-   // data->PushExtraData(new pipeData::DataKey{sleeper_unit[0].getKey(), static_cast<void*>(new int(0))});
-    dataIn->Push(data);
-    std::cout << "Sending item " << i << std::endl;
-  }
-
-  for (int i = 0; i < number_of_data_items - allocated_memory; ++i)
-  {
-    data = (pipeData *)fromPipe->Pop();
+    // Create new data items until they start returning from the pipe
+    if ((data = (pipeData *)fromPipe->Pop(false)) == nullptr)
+    {
+      std::cout << "Allocate a new data item ";
+      data = new pipeData(nullptr);
+      data->PushExtraData(new pipeData::DataKey{"DATA_ID", static_cast<void *>(new int(i))});
+      // data->PushExtraData(new pipeData::DataKey{sleeper_unit[0].getKey(), static_cast<void*>(new int(0))});
+      ++allocated_memory;
+    }
+    else
+    {
+      std::cout << "Got data from queue ";
+    }
 
     // Do something with the data
+    //    sleep(1);
 
-    std::cout << "Pushing item " << i + allocated_memory << std::endl;
+    dataId = *static_cast<int *>(data->GetExtraData("DATA_ID"));
+
+    std::cout << "dataId =  " << dataId << std::endl;
 
     dataIn->Push((void *)data);
   }
 
   std::cout << "Waiting for pipe to drain " << allocated_memory << " data buffers\n";
-
-  for (int i = 0; i < allocated_memory; ++i) {
-    std::cout << " Popping item = " << i << std::endl;
+  // sleep(5);
+  for (int i = 0; i < allocated_memory; ++i)
+  {
+    std::cout << " Popping item = " << i;
     data = (pipeData *)fromPipe->Pop();
+    dataId = *(int *)data->GetExtraData("_#DATA_ID#_");
+    std::cout << " dataId =  " << dataId << std::endl;
   }
 
   pipe->Profile();
@@ -99,4 +109,3 @@ int main()
 
   exit(0);
 }
-

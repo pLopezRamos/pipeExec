@@ -73,20 +73,19 @@ class Pipeline {
       int64_t sys_time_end; /**< The system time at the end of the RunNode function */
     };
     // Constructor for the Pipeline class
-    Pipeline(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, bool = false,
+    Pipeline(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, void *, bool = false,
         bool = false);
 
     // Destructor of the Pipeline
     ~Pipeline();
 
     // Adds a new processing unit to the Pipeline
-    pipeQueue* AddProcessingUnit(ProcessingUnitInterface *, int, void * = nullptr, int = 2, int = 0, int = 0);
+    PipeNode* AddProcessingUnit(ProcessingUnitInterface *, int, void * = nullptr, int = 2, int = 0, int = 0);
+
+    PipeNode *InsertProcessingUnit(PipeNode *, ProcessingUnitInterface *, int , void * = nullptr, int = 2, int = 0, int = 0);
 
     // Runs the pipe making all the threads wait for an input
     int RunPipe();
-
-    // Waits until all the threads finished processing
-    void WaitFinish();
 
     void Profile();
 
@@ -99,6 +98,8 @@ class Pipeline {
     bool debug_;                 /**< The flag to show debug information */
     bool show_profiling_;        /**< The flag to show profiling information */
     std::vector<Profiling> profiling_list_; /**< The list of profiling information */
+    PipeNode* firstNode_;
+    PipeNode* lastNode_;
 };
 
 #endif
