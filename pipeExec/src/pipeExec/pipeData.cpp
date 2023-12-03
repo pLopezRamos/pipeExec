@@ -42,7 +42,7 @@
  * carrier for all the next data in the class.
  * @param debug The debug flag for showing the information inside the pipeData class
  */
-pipeData::pipeData(void *data, bool debug) : data_(data), debug_(debug) {}
+pipeData::pipeData(pipeData::dataPacket data, bool debug) : data_(data), debug_(debug) {}
 
 /**
  * @brief The data destructor.
@@ -55,7 +55,8 @@ pipeData::~pipeData() {}
  *
  * @param extra_data The struct {key, data} to push to the vector
  */
-void pipeData::PushExtraData(DataKey *extra_data) {
+void pipeData::PushExtraData(DataKey *extra_data)
+{
   extra_data_.push_back(extra_data);
 }
 
@@ -67,10 +68,13 @@ void pipeData::PushExtraData(DataKey *extra_data) {
  *
  * @param key The key to lookup in the vector
  */
-void *pipeData::GetExtraData(std::string key) const {
+pipeData::dataPacket pipeData::GetExtraData(std::string key) const
+{
 
-  for (const auto& entry : extra_data_) {
-    if (entry->key == key) {
+  for (const auto &entry : extra_data_)
+  {
+    if (entry->key == key)
+    {
       return entry->data;
     }
   }
@@ -81,14 +85,17 @@ void *pipeData::GetExtraData(std::string key) const {
 
 /// @brief Change the value stored in extra data
 /// @param newData The value to be stored
-/// @param key The key that identifies the data element 
+/// @param key The key that identifies the data element
 /// @return The old value or nullptr if the key is not found
-void *pipeData::resetExtraData(std::string key, void *newData) {
+pipeData::dataPacket pipeData::resetExtraData(std::string key, pipeData::dataPacket newData)
+{
 
-  void *oldData;
+  pipeData::dataPacket oldData;
 
-  for (const auto& entry : extra_data_) {
-    if (entry->key == key) {
+  for (const auto &entry : extra_data_)
+  {
+    if (entry->key == key)
+    {
       oldData = entry->data;
       entry->data = newData;
       return oldData;
@@ -101,11 +108,14 @@ void *pipeData::resetExtraData(std::string key, void *newData) {
  * @brief Returns the initial stored data inside the class
  * @return The pointer to the data
  */
-void *pipeData::data() const { return data_; }
+pipeData::dataPacket pipeData::data() const { return data_; }
 
-bool pipeData::isKey(std::string key) const {
-  for (const auto& entry : extra_data_) {
-    if (entry->key == key) {
+bool pipeData::isKey(std::string key) const
+{
+  for (const auto &entry : extra_data_)
+  {
+    if (entry->key == key)
+    {
       return true;
     }
   }
@@ -113,16 +123,18 @@ bool pipeData::isKey(std::string key) const {
   return false;
 }
 
-bool pipeData::setDataKey(std::string key, void *data) {
-  if ( ! isKey(key) ) {
+bool pipeData::setDataKey(std::string key, pipeData::dataPacket data)
+{
+  if (!isKey(key))
+  {
     DataKey *hold = new DataKey;
     hold->key = key;
     hold->data = data;
     PushExtraData(hold);
     return true;
-  } else {
+  }
+  else
+  {
     return false;
   }
 }
-
-

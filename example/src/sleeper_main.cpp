@@ -46,13 +46,13 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 
   pipeQueue *dataIn = new pipeQueue(qSize, debug_flag);
   pipeQueue *dataOut = new pipeQueue(qSize, debug_flag);
-  Pipeline *pipe = new Pipeline(new Sleeper, dataIn, dataOut, threadMult * thread[0], static_cast<void *>(&sleepT[0]), profiling);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<void *>(&adaptable), 6);
-  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[1], static_cast<void *>(&sleepT[1]), 3, 20, 1);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<void *>(&adaptable), 6);
-  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[2], static_cast<void *>(&sleepT[2]), 3, 20, 1);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<void *>(&adaptable), 6);
-  auto node = pipe->AddProcessingUnit(new Sleeper, threadMult * thread[3], static_cast<void *>(&sleepT[3]), 3, 10, 1);
+  Pipeline *pipe = new Pipeline(new Sleeper, dataIn, dataOut, threadMult * thread[0], static_cast<pipeData::dataPacket>(&sleepT[0]), profiling);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[1], static_cast<pipeData::dataPacket>(&sleepT[1]), 3, 20, 1);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[2], static_cast<pipeData::dataPacket>(&sleepT[2]), 3, 20, 1);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+  auto node = pipe->AddProcessingUnit(new Sleeper, threadMult * thread[3], static_cast<pipeData::dataPacket>(&sleepT[3]), 3, 10, 1);
   auto fromPipe = node->out_data_queue();
   pipe->RunPipe();
 
@@ -68,7 +68,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
     {
       std::cout << "Allocate a new data item ";
       data = new pipeData(nullptr);
-      data->PushExtraData(new pipeData::DataKey{"DATA_ID", static_cast<void *>(new int(i))});
+      data->PushExtraData(new pipeData::DataKey{"DATA_ID", static_cast<pipeData::dataPacket>(new int(i))});
       // data->PushExtraData(new pipeData::DataKey{sleeper_unit[0].getKey(), static_cast<void*>(new int(0))});
       ++allocated_memory;
     }
@@ -84,7 +84,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 
     std::cout << "dataId =  " << dataId << std::endl;
 
-    dataIn->Push((void *)data);
+    dataIn->Push(static_cast<pipeData::dataPacket>(data));
   }
 
   std::cout << "Waiting for pipe to drain " << allocated_memory << " data buffers\n";

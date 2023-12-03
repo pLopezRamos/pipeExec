@@ -19,7 +19,7 @@ Drano::~Drano() {}
  *
  * @return void
  */
-void Drano::Init(void *initData)
+void Drano::Init(pipeData::dataPacket initData)
 {
   lastCount_ = 0;
   ignoreCount_ = 0;
@@ -35,7 +35,7 @@ void Drano::Init(void *initData)
   }
 }
 
-void Drano::Run(void *data)
+void Drano::Run(pipeData::dataPacket data)
 { 
 
   auto pdata = (pipeData*)data;
@@ -48,12 +48,6 @@ void Drano::Run(void *data)
   auto cmd = PipeNode::nodeCmd::NO_OP;
 
  std::cout << " node id = " << node->node_id() <<" IN = " << inCount << " OUT " << outCount;
-
-/*  if ( currentCount > lastCount_ ) {
-    cmd = PipeNode::nodeCmd::ADD_THR;
-    ignoreCount_ = currentCount;
-  } else if ( (currentCount <= lastCount_) && adaptable_ )
-    cmd = PipeNode::nodeCmd::END_THR;*/
 
   if ( outCount > inCount ) cmd = PipeNode::nodeCmd::ADD_THR;
   else if ( adaptable_ ) {

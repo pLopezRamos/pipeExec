@@ -50,13 +50,15 @@ class PipeNode; // Forward defintion
  */
 class pipeData {
   public:
+    
+    using dataPacket = void*;
     /**
      * @brief This structure works like a std::pair but its member names are
      * meaningful and are used to store data paired to a particular key.
      */
     struct DataKey {
       std::string key; /**< The key used to find the data associated */
-      void *data;      /**< The extra data stored*/
+      dataPacket data;      /**< The extra data stored*/
     };
 
     /**
@@ -64,7 +66,7 @@ class pipeData {
      *
      * @return True if the key is unique and flase otherwise.
      */
-    bool setDataKey(std::string key, void *data);
+    bool setDataKey(std::string key, dataPacket data);
 
     /**
      * @brief Check if the given key exists in the pipeData object
@@ -74,7 +76,7 @@ class pipeData {
     bool isKey(std::string key) const;
 
     // The data constructor
-    pipeData(void *, bool = false);
+    pipeData(dataPacket, bool = false);
 
     // The data destructor
     ~pipeData();
@@ -86,16 +88,16 @@ class pipeData {
     void *GetExtraData(std::string) const;
 
     // Gets the initial data stored in the class
-    void *data() const;
+dataPacket data() const;
 
-    void *resetExtraData(std::string key, void *newData);
+    void *resetExtraData(std::string key, dataPacket newData);
 
     PipeNode *getNodeData() { return node; };
 
     void setNodeData(PipeNode *nodeData) { node = nodeData; };
 
   private:
-    void *data_;
+    dataPacket data_;
     unsigned int index_;
     std::vector<DataKey *> extra_data_;
     bool debug_;

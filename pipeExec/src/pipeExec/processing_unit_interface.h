@@ -46,8 +46,8 @@ public:
    * @brief Use this function to allocate memory for the variables that need
    * it and initialize some of them
    */
-  virtual void Init(void ** = nullptr) { return; };
-  virtual void Init(void * = nullptr) { return; };
+  virtual void Init(pipeData::dataPacket* = nullptr) { return; };
+  virtual void Init(pipeData::dataPacket = nullptr) { return; };
 
   /**
    * @brief Use this function to process the data. It's recommended to recast
@@ -56,14 +56,14 @@ public:
    *
    * @param data The data to manipulate
    */
-  virtual void Run(void *data) = 0;
+  virtual void Run(pipeData::dataPacket) = 0;
 
   /**
    * @brief Use this function to free all the memory allocated in the Start
    * method
    */
   //  virtual void End() = 0;
-  virtual void End(void *data = nullptr) { return; };
+  virtual void End(pipeData::dataPacket = nullptr) { return; };
 
   /**
    * @brief Returns new pointer to a processing unit class. Use {return new
@@ -80,7 +80,7 @@ public:
   /// @brief Returns the basic data from the pipeData object
   /// @param data - A pointer to the pipeData object
   /// @return The void pointer from the pipeData object
-  void *getData(void *data)
+  pipeData::dataPacket getData(pipeData::dataPacket data)
   {
     pipeData* pipeD = static_cast<pipeData*>(data);
     return (pipeD != nullptr) ? pipeD->data() : nullptr;
@@ -90,7 +90,7 @@ public:
   /// @param data a pointer to the pipeData obejct
   /// @param key The key to search for
   /// @return The data associated to the key or nullptr if not found
-  void *getExtraData(void *data, const std::string key)
+  pipeData::dataPacket getExtraData(pipeData::dataPacket data, const std::string key)
   {
     if (data)
     {

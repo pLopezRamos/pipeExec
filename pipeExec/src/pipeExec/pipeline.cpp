@@ -1,5 +1,4 @@
 #include "pipeline.h"
-#include "pipeData.h"
 
 #include <cstdio>
 #include <string>
@@ -17,7 +16,7 @@
  * @param initData data to be passed to the Init() method of the processing unit
  *
  */
-Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQueue *data_out, int instances, void *initData, bool debug, bool profiling)
+Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQueue *data_out, int instances, pipeData::dataPacket initData, bool debug, bool profiling)
     : debug_(debug), show_profiling_(profiling), node_number_(0)
 {
 
@@ -60,7 +59,7 @@ Pipeline::~Pipeline() {}
  *
  * @returns a pointer to the node.
  */
-PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, void *initData, int queueSize, int maxInstances, int minInstances)
+PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
 {
 
   PipeNode *new_node = new PipeNode;
@@ -103,7 +102,7 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
  *
  * @returns a pointer to the node.
  */
-PipeNode *Pipeline::InsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterface *procUnit, int instances, void *initData, int queueSize, int maxInstances, int minInstances)
+PipeNode *Pipeline::InsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
 {
   return nullptr;
 }
