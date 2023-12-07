@@ -19,8 +19,7 @@
  * Contact: lopez.ramos.pablo@gmail.com
  */
 
-#ifndef PROFILING_H
-#define PROFILING_H
+#pragma once
 
 #define TIME_POINT std::chrono::system_clock::time_point
 #define STOPWATCH_NOW std::chrono::high_resolution_clock::now()
@@ -38,5 +37,3 @@ inline uint64_t rdtsc() {
   __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
   return (uint64_t)hi << 32 | lo;
 }
-
-#endif

@@ -29,8 +29,7 @@
  * Contact: lopez.ramos.pablo@gmail.com
  */
 
-#ifndef PIPEDATA_H
-#define PIPEDATA_H
+#pragma once
 
 //#include "memory_manager.h"
 #include "pipeQueue.h"
@@ -103,5 +102,3 @@ dataPacket data() const;
     bool debug_;
     PipeNode *node;
 };
-
-#endif

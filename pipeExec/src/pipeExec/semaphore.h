@@ -29,8 +29,7 @@
  * @author Lucas Hernández Abreu and Pablo López Ramos
  * Contact: lopez.ramos.pablo@gmail.com
  */
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#pragma once
 
 #include <atomic>
 #include <mutex>
@@ -75,5 +74,3 @@ class Semaphore {
   bool debug_; /**< Debug flag for showing the information on each Semaphore
                   operation */
 };
-
-#endif

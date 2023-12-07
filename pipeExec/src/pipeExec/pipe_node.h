@@ -28,8 +28,7 @@
  * @author Lucas Hernández Abreu and Pablo López Ramos
  * Contact: lopez.ramos.pablo@gmail.com
  */
-#ifndef PIPE_NODE_H
-#define PIPE_NODE_H
+#pragma once
 
 #include "processing_unit_interface.h"
 #include <thread>
@@ -154,5 +153,3 @@ class PipeNode {
     PipeNode* next_; 
     std::vector<nodeCmd> cmd_;
 };
-
-#endif

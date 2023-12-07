@@ -29,8 +29,7 @@
  * Contact: lopez.ramos.pablo@gmail.com
  */
 
-#ifndef PROCESSING_UNIT_INTERFACE_H
-#define PROCESSING_UNIT_INTERFACE_H
+#pragma once
 
 #include "pipeData.h"
 /**
@@ -42,6 +41,7 @@
 class ProcessingUnitInterface
 {
 public:
+
   /**
    * @brief Use this function to allocate memory for the variables that need
    * it and initialize some of them
@@ -108,4 +108,3 @@ protected:
   std::string extraDataKey;
 
 };
-#endif

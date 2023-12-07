@@ -28,8 +28,7 @@
  * @author Lucas Hernández Abreu and Pablo López Ramos
  * Contact: lopez.ramos.pablo@gmail.com
  */
-#ifndef PIPELINE_H
-#define PIPELINE_H
+#pragma once
 
 #include "pipe_node.h"
 #include "pipeData.h"
@@ -102,5 +101,3 @@ class Pipeline {
     PipeNode* firstNode_;
     PipeNode* lastNode_;
 };
-
-#endif

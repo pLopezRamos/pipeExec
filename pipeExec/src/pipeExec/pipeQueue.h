@@ -29,8 +29,7 @@
  * Contact: lopez.ramos.pablo@gmail.com
  */
 
-#ifndef PIPEQUEUE_H
-#define PIPEQUEUE_H
+#pragma once
 
 #include "semaphore.h"
 
@@ -104,5 +103,3 @@ class pipeQueue {
 
   bool debug_; /**< Boolean for showing the debug information*/
 };
-
-#endif
