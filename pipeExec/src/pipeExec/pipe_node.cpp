@@ -10,15 +10,16 @@
 
 #include <cstdio>
 
-
 /**
  * @brief Signals the end of the node's work
  *
  * This method signals the end of the node's work, and ensures that all
  * threads have finished execution before returning.
  */
-void PipeNode::EndNodeWork() {
-  for (auto& thread : running_threads_) {
+void PipeNode::EndNodeWork()
+{
+  for (auto &thread : running_threads_)
+  {
     thread->join();
   }
 }
@@ -36,6 +37,20 @@ pipeQueue *PipeNode::in_data_queue() const { return in_data_queue_; }
  * @return A pointer to the output memory manager of the current node
  */
 pipeQueue *PipeNode::out_data_queue() const { return out_data_queue_; }
+
+/**
+ * @brief Gets the output memory manager of the current node
+ *
+ * @return A pointer to the next node queue of the current node
+ */
+pipeQueue *PipeNode::from_next_queue() const { return from_next_queue_; }
+
+/**
+ * @brief Gets the output memory manager of the current node
+ *
+ * @return A pointer to the to the previous node queue of the current node
+ */
+pipeQueue *PipeNode::to_prev_queue() const { return to_prev_queue_; }
 
 /**
  * @brief Gets whether the current node is the last node in the pipeline
@@ -75,20 +90,23 @@ int PipeNode::min_instances() const { return min_instances_; }
 
 /**
  * @brief Get the next command in the command queue
- * 
+ *
  * @return THe next command or EMPTY
-*/
-PipeNode::nodeCmd PipeNode::getCmd() {
-  if ( cmd_.empty() )
+ */
+PipeNode::nodeCmd PipeNode::getCmd()
+{
+  if (cmd_.empty())
     return PipeNode::nodeCmd::EMPTY;
-  else {
+  else
+  {
     auto cmd = cmd_.back();
     cmd_.pop_back();
-    return cmd; }
+    return cmd;
+  }
 }
 
-PipeNode* PipeNode::getPrev() const { return prev_; };
-PipeNode* PipeNode::getNext() const { return next_; };
+PipeNode *PipeNode::getPrev() const { return prev_; };
+PipeNode *PipeNode::getNext() const { return next_; };
 
 /**
  * @brief Gets the ID of the current node
@@ -124,6 +142,20 @@ void PipeNode::in_data_queue(pipeQueue *data_in) { in_data_queue_ = data_in; }
  * @param out_data_queue A pointer to the output queue of the current node
  */
 void PipeNode::out_data_queue(pipeQueue *data_out) { out_data_queue_ = data_out; }
+
+/**
+ * @brief Sets the prev queue of the current node
+ *
+ * @param p_queue A pointer to the previous node queue of the current node
+ */
+void PipeNode::to_prev_queue(pipeQueue *p_queue) { to_prev_queue_ = p_queue; }
+
+/**
+ * @brief Sets the next queue of the current node
+ *
+ * @param n_queue A pointer to the next node queue of the current node
+ */
+void PipeNode::from_next_queue(pipeQueue *n_queue) { from_next_queue_ = n_queue; }
 
 /**
  * @brief Sets the boolean indicating if the node is the last in the
@@ -165,7 +197,7 @@ void PipeNode::min_instances(int min_instances) { min_instances_ = min_instances
 /**
  * @brief Add a command to the command queue
  *
- * @param cmd The command to be added 
+ * @param cmd The command to be added
  */
 void PipeNode::setCmd(PipeNode::nodeCmd cmd) { cmd_.push_back(cmd); }
 
@@ -174,14 +206,14 @@ void PipeNode::setCmd(PipeNode::nodeCmd cmd) { cmd_.push_back(cmd); }
  *
  * @param prev A pointer to the previousnode.
  */
-void PipeNode::setPrev(PipeNode* prev) { prev_ = prev; }
+void PipeNode::setPrev(PipeNode *prev) { prev_ = prev; }
 
 /**
  * @brief Set a pointer to the previous node.
  *
  * @param prev A pointer to the previousnode.
  */
-void PipeNode::setNext(PipeNode* next) { next_ = next; }
+void PipeNode::setNext(PipeNode *next) { next_ = next; }
 
 /**
  * @brief Sets the ID of the current node

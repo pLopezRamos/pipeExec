@@ -32,6 +32,8 @@ Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQu
   first_node->number_of_instances(instances);
   first_node->setPrev(first_node);
   first_node->setNext(first_node);
+  first_node->from_next_queue(nullptr);
+  first_node->to_prev_queue(new pipeQueue(data_out->max_size(), debug_));
   firstNode_ = first_node;
   lastNode_ = first_node;
 
@@ -80,6 +82,9 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
   new_node->setNext(nullptr);
   new_node->in_data_queue(new_node->getPrev()->out_data_queue());
   new_node->out_data_queue(new pipeQueue(queueSize, debug_));
+  new_node->to_prev_queue(new pipeQueue(queueSize, debug_));
+  new_node->from_next_queue(nullptr);
+  new_node->getPrev()->from_next_queue(new_node->to_prev_queue());
 //  execution_list_.push_back(new_node);
   lastNode_ = new_node;
   ++node_number_;
@@ -195,6 +200,13 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
                 node->number_of_instances(node->number_of_instances() - 1);
               }
             }
+            break;
+            case PipeNode::nodeCmd::LD_PU: //  std::cout << "Loading a new proccessing unit - cmd = " << cmd << std::endl;
+              // We have to collapse the stage remembering the number of instances
+              processing_unit->End(data);
+            // extract the proccessing unit from the data
+            // add the init data to the node (for clonning)
+            // clone the number of instances
             break;
           default:
             std::cout << "Command id " << cmd << "not implemented." << std::endl;

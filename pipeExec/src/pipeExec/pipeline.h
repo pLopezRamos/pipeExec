@@ -1,6 +1,6 @@
 /*
  * pipeExec is a library for creating concurrent proccesing pipes
- * 
+ *
  * Copyright (C) 2023 Lucas Hernández Abreu and Pablo López Ramos
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,59 +45,65 @@
  * queues and threads consuming the data and processing it concurrently to speed
  * up the proccess.
  */
-class Pipeline {
-  public:
-    enum PipelineError {
-      kBadArgumentFormat,
-      kBadArgumentType,
-    };
+class Pipeline
+{
+public:
+  enum PipelineError
+  {
+    kBadArgumentFormat,
+    kBadArgumentType,
+  };
 
-    /**
-     * @brief This struct holds the information needed for the profiling of the
-     * processing unit
-     * @desc This struct holds all the information that the pipe will print when
-     * the print_profile method function is called
-     */
-    struct Profiling {
-      int32_t node_id;   /**< The id of the node to profile */
-      int32_t thread_id; /**< The id of the thread that executed the processing unit
-                          */
-      uint64_t cycles_start; /**< The timestamp from the tsc in the CPU at the
-                               start of the RunNode function */
-      uint64_t cycles_end;   /**< The timestamp from the tsc in the CPU at the end
-                               of the RunNode function */
-      TIME_POINT time_start; /**< The clock time at the start of the RunNode function */
-      TIME_POINT time_end; /**< The clock time at the end of the RunNode function */
-      int64_t sys_time_start; /**< The system time at the start of the RunNode
-                                function */
-      int64_t sys_time_end; /**< The system time at the end of the RunNode function */
-    };
-    // Constructor for the Pipeline class
-    Pipeline(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, pipeData::dataPacket, bool = false,
-        bool = false);
+  /**
+   * @brief This struct holds the information needed for the profiling of the
+   * processing unit
+   * @desc This struct holds all the information that the pipe will print when
+   * the print_profile method function is called
+   */
+  struct Profiling
+  {
+    int32_t node_id;        /**< The id of the node to profile */
+    int32_t thread_id;      /**< The id of the thread that executed the processing unit
+                             */
+    uint64_t cycles_start;  /**< The timestamp from the tsc in the CPU at the
+                              start of the RunNode function */
+    uint64_t cycles_end;    /**< The timestamp from the tsc in the CPU at the end
+                              of the RunNode function */
+    TIME_POINT time_start;  /**< The clock time at the start of the RunNode function */
+    TIME_POINT time_end;    /**< The clock time at the end of the RunNode function */
+    int64_t sys_time_start; /**< The system time at the start of the RunNode
+                              function */
+    int64_t sys_time_end;   /**< The system time at the end of the RunNode function */
+  };
+  // Constructor for the Pipeline class
+  Pipeline(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, pipeData::dataPacket, bool = false,
+                     bool = false);
 
-    // Destructor of the Pipeline
-    ~Pipeline();
+  // Destructor of the Pipeline
+  ~Pipeline();
 
-    // Adds a new processing unit to the Pipeline
-    PipeNode* AddProcessingUnit(ProcessingUnitInterface *, int, pipeData::dataPacket = nullptr, int = 2, int = 0, int = 0);
+  // Adds a new processing unit to the Pipeline
+  PipeNode *AddProcessingUnit(ProcessingUnitInterface *, int, pipeData::dataPacket = nullptr, int = 2, int = 0, int = 0);
 
-    PipeNode *InsertProcessingUnit(PipeNode *, ProcessingUnitInterface *, int , pipeData::dataPacket = nullptr, int = 2, int = 0, int = 0);
+  PipeNode *InsertProcessingUnit(PipeNode *, ProcessingUnitInterface *, int, pipeData::dataPacket = nullptr, int = 2, int = 0, int = 0);
 
-    // Runs the pipe making all the threads wait for an input
-    int RunPipe();
+  // Runs the pipe making all the threads wait for an input
+  int RunPipe();
 
-    void Profile();
+  void Profile();
 
-  private:
-    std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
-                                               be executed in order */
-    std::mutex execution_mutex_; /**< The mutex to safely run the nodes */
-    std::mutex profiling_mutex_; /**< The mutex to safely recollect times */
-    int node_number_;            /**< The number of nodes that are active */
-    bool debug_;                 /**< The flag to show debug information */
-    bool show_profiling_;        /**< The flag to show profiling information */
-    std::vector<Profiling> profiling_list_; /**< The list of profiling information */
-    PipeNode* firstNode_;
-    PipeNode* lastNode_;
+  PipeNode *getHead() { return firstNode_; };
+  PipeNode *getTail() { return lastNode_; };
+
+private:
+  std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
+                                             be executed in order */
+  std::mutex execution_mutex_;             /**< The mutex to safely run the nodes */
+  std::mutex profiling_mutex_;             /**< The mutex to safely recollect times */
+  int node_number_;                        /**< The number of nodes that are active */
+  bool debug_;                             /**< The flag to show debug information */
+  bool show_profiling_;                    /**< The flag to show profiling information */
+  std::vector<Profiling> profiling_list_;  /**< The list of profiling information */
+  PipeNode *firstNode_;
+  PipeNode *lastNode_;
 };
