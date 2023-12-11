@@ -31,6 +31,7 @@
 #pragma once
 
 #include "processing_unit_interface.h"
+#include "pipeMapper.h"
 #include <thread>
 #include "profiling.h"
 
@@ -65,6 +66,7 @@ public:
 
   // Default constructor for PipeNode
   PipeNode(){};
+  //PipeNode();
 
   /**
    * @brief Destructor for PipeNode
@@ -106,8 +108,10 @@ public:
   int max_instances() const;
   int min_instances() const;
   nodeCmd getCmd();
-  PipeNode *getPrev() const;
-  PipeNode *getNext() const;
+  //PipeNode *getPrev() const;
+//  PipeNode *getNext() const;
+ pipeMapper::nodeId getPrevAddress() const;
+pipeMapper::nodeId getNodeAddress() const;
 
   // Gets the ID of the current node
   int node_id();
@@ -142,8 +146,10 @@ public:
   void max_instances(int);
   void min_instances(int);
   void setCmd(nodeCmd);
-  void setPrev(PipeNode *);
-  void setNext(PipeNode *);
+  //void setPrev(PipeNode *);
+  void setPrevAddress(pipeMapper::nodeId);
+//  void setNext(PipeNode *);
+  void setNodeAddress(pipeMapper::nodeId);
 
   // Sets the ID of the current node
   void node_id(int);
@@ -153,6 +159,7 @@ public:
 
   // Sets the extra_args
   void extra_args(void *);
+
 
   Semaphore *ctl_sema;
   std::mutex ctl_mtx;
@@ -175,4 +182,6 @@ private:
   PipeNode *prev_;
   PipeNode *next_;
   std::vector<nodeCmd> cmd_;
+  pipeMapper::nodeId prev_address_;
+  pipeMapper::nodeId node_address_;
 };

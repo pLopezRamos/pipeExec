@@ -32,6 +32,7 @@
 
 #include "pipe_node.h"
 #include "pipeData.h"
+#include "pipeMapper.h"
 #include <algorithm>
 #include <stdarg.h>
 
@@ -95,6 +96,7 @@ public:
   PipeNode *getHead() { return firstNode_; };
   PipeNode *getTail() { return lastNode_; };
 
+  pipeMapper oneDimPipe;
 private:
   std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
                                              be executed in order */
@@ -106,4 +108,5 @@ private:
   std::vector<Profiling> profiling_list_;  /**< The list of profiling information */
   PipeNode *firstNode_;
   PipeNode *lastNode_;
+  pipeMapper::nodeId prev_address_;
 };

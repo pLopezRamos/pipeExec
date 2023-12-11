@@ -30,14 +30,16 @@ Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQu
   first_node->in_data_queue(data_in);
   first_node->processing_unit(procUnit);
   first_node->number_of_instances(instances);
-  first_node->setPrev(first_node);
-  first_node->setNext(first_node);
-  first_node->from_next_queue(nullptr);
-  first_node->to_prev_queue(new pipeQueue(data_out->max_size(), debug_));
+  //  first_node->setPrev(first_node);
+  //  first_node->setNext(first_node);
   firstNode_ = first_node;
   lastNode_ = first_node;
-
-//    execution_list_.push_back(first_node);
+  first_node->setNodeAddress(oneDimPipe.addNode(first_node));
+  first_node->setPrevAddress(first_node->getNodeAddress());
+  prev_address_ = first_node->getNodeAddress();
+  
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
+  //    execution_list_.push_back(first_node);
   ++node_number_;
 }
 
@@ -68,8 +70,8 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
 
   new_node->extra_args(initData);
 
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
   int prev_idx = node_number_ - 1;
-  lastNode_->last_node(false);
   new_node->ctl_sema = new Semaphore(0);
   new_node->node_id(node_number_);
   new_node->last_node(true);
@@ -77,17 +79,28 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
   new_node->number_of_instances(instances);
   new_node->max_instances(maxInstances);
   new_node->min_instances(minInstances);
-  new_node->setPrev(lastNode_);
-  new_node->getPrev()->setNext(new_node);
-  new_node->setNext(nullptr);
-  new_node->in_data_queue(new_node->getPrev()->out_data_queue());
-  new_node->out_data_queue(new pipeQueue(queueSize, debug_));
-  new_node->to_prev_queue(new pipeQueue(queueSize, debug_));
-  new_node->from_next_queue(nullptr);
-  new_node->getPrev()->from_next_queue(new_node->to_prev_queue());
-//  execution_list_.push_back(new_node);
+  std::cout << __func__ << ":" << __LINE__ << std::endl;
+  //  new_node->setPrev(lastNode_);
+  //  new_node->getPrev()->setNext(new_node);
+  //  new_node->setNext(nullptr);
+//  new_node->in_data_queue(new_node->getPrev()->out_data_queue());
+   new_node->in_data_queue(new pipeQueue(queueSize, debug_));
+  // new_node->out_data_queue(new pipeQueue(queueSize, debug_));
+//  new_node->to_prev_queue(new pipeQueue(queueSize, debug_));
+  //  new_node->from_next_queue(nullptr);
+  //  new_node->getPrev()->from_next_queue(new_node->to_prev_queue());
+  //  execution_list_.push_back(new_node);
+  std::cout << __func__ << ":" << __LINE__ << std::endl;
   lastNode_ = new_node;
   ++node_number_;
+  new_node->setNodeAddress(oneDimPipe.addNode(new_node));
+  std::cout << __func__ << ":" << __LINE__ << std::endl;
+  new_node->setPrevAddress(prev_address_);
+
+  auto prev_ = (PipeNode*)oneDimPipe.getPipeNode(prev_address_);
+  prev_->last_node(false);
+  prev_address_ = new_node->getNodeAddress();
+
   return new_node;
 }
 
@@ -126,14 +139,16 @@ PipeNode *Pipeline::InsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterfac
  * @param debug The debug flag
  *
  */
-void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vector<Pipeline::Profiling> &profiling_information, bool debug = false, bool profiling = false)
+//void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vector<Pipeline::Profiling> &profiling_information, bool debug = false, bool profiling = false)
+void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::vector<Pipeline::Profiling> &profiling_information, pipeMapper &map, bool debug = false, bool profiling = false)
 {
 
   ProcessingUnitInterface *processing_unit = node->processing_unit();
 
   // std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
-  if (id != 0)
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
+  if (n_id != 0)
   {
     processing_unit = node->processing_unit()->Clone();
     if (processing_unit == nullptr)
@@ -143,6 +158,7 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
     }
   }
 
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
   mtx.unlock();
 
   // TIMESTAMP
@@ -150,7 +166,7 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
   {
     prof.lock();
     profiling_information.push_back({.node_id = node->node_id(),
-                                     .thread_id = id,
+                                     .thread_id = n_id,
                                      .cycles_start = rdtsc(),
                                      .cycles_end = 0,
                                      .time_start = STOPWATCH_NOW,
@@ -160,23 +176,35 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
     prof.unlock();
   }
 
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
   // Starts the data at the processing unit, the user must be aware of the arg
   processing_unit->Init(node->extra_args());
 
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
   try
   {
     auto terminate = false;
     do
     {
+      std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
       auto data = node->in_data_queue()->Pop();
-      auto pnode = node->getPrev();
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
+      //      auto pnode = node->getPrev();
+      auto pnode = (PipeNode*)map.getPipeNode(node->getPrevAddress());
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
       if (pnode != node)
       {
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
         pnode->ctl_mtx.lock();
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
         auto cmd = pnode->getCmd();
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
         node->ctl_mtx.lock();
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
         while (cmd != PipeNode::nodeCmd::EMPTY)
         {
+  std::cout << __func__ << " :::::::::::::::::::: " << __LINE__ << std::endl;
           switch (cmd)
           {
           case PipeNode::nodeCmd::NO_OP: // std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
@@ -186,7 +214,7 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
             {
               mtx.lock();
               std::cout << "NODE " << node->node_id() << " LAUNCH NEW INSTANCE " << std::endl;
-              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), debug, profiling));
+              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), std::ref(map), debug, profiling));
               node->number_of_instances(node->number_of_instances() + 1);
             }
             break;
@@ -201,13 +229,6 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
               }
             }
             break;
-            case PipeNode::nodeCmd::LD_PU: //  std::cout << "Loading a new proccessing unit - cmd = " << cmd << std::endl;
-              // We have to collapse the stage remembering the number of instances
-              processing_unit->End(data);
-            // extract the proccessing unit from the data
-            // add the init data to the node (for clonning)
-            // clone the number of instances
-            break;
           default:
             std::cout << "Command id " << cmd << "not implemented." << std::endl;
           }
@@ -217,7 +238,14 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
         pnode->ctl_mtx.unlock();
       }
 
-      std::cout << "NODE " << node->node_id() << " RUNNING INST " << id << " OF " << node->number_of_instances() << std::endl;
+      std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
+
+      if (node->processing_unit() != processing_unit)
+      {
+        processing_unit->End(data);
+        processing_unit = node->processing_unit();
+        processing_unit->Init(node->extra_args());
+      }
 
       //      void *data = nullptr;
       auto pData = (pipeData *)data;
@@ -228,7 +256,19 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
       processing_unit->Run(data);
       //      std::cout << "NODE " << node->node_id() << " END   RUN " << std::endl;
 
-      node->out_data_queue()->Push(data);
+      auto id = node->getNodeAddress();
+      if (node->last_node())
+      {
+        id.x = id.y = id.z = 0;
+        auto next_node = (PipeNode*)map.getPipeNode(id);
+        next_node->out_data_queue()->Push(data);
+      }
+      else
+      {
+        id.x += 1;
+        auto next_node = (PipeNode*)map.getPipeNode(id);
+        next_node->in_data_queue()->Push(data);
+      }
       //      std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
 
       // std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
@@ -240,7 +280,7 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
         prof.lock();
         for (auto &info : profiling_information)
         {
-          if (info.node_id == node->node_id() && info.thread_id == id)
+          if (info.node_id == node->node_id() && info.thread_id == n_id)
           {
             info.cycles_end = rdtsc();
             info.time_end = STOPWATCH_NOW;
@@ -265,12 +305,16 @@ void RunNode(PipeNode *node, int id, std::mutex &mtx, std::mutex &prof, std::vec
  */
 int Pipeline::RunPipe()
 {
+  
   int nodes_executed = 0;
-  auto node = firstNode_;
+  //  auto node = firstNode_;
+  auto id = pipeMapper::nodeId(0, 0, 0);
+  PipeNode* node;
   bool done = false;
 
   do
   {
+    node = (PipeNode*)oneDimPipe.getPipeNode(id);
     auto numberOfInstances = node->number_of_instances();
     for (auto instanceIt = 0; instanceIt < numberOfInstances; ++instanceIt)
     {
@@ -279,7 +323,7 @@ int Pipeline::RunPipe()
         execution_mutex_.lock();
         node->PushThread(new std::thread(
             RunNode, node, instanceIt, std::ref(execution_mutex_),
-            std::ref(profiling_mutex_), std::ref(profiling_list_), debug_,
+            std::ref(profiling_mutex_), std::ref(profiling_list_), std::ref(oneDimPipe), debug_,
             show_profiling_));
       }
       catch (...)
@@ -289,7 +333,7 @@ int Pipeline::RunPipe()
     ++nodes_executed;
 
     done = node->last_node();
-    node = node->getNext();
+    id.x += 1;
   } while (!done);
   /*  for (int it = 0; it < node_number_; ++it)
     {
@@ -310,6 +354,7 @@ int Pipeline::RunPipe()
       }
       ++nodes_executed;
     }*/
+  std::cout << __func__ << " :::::::::::::::::::: " << __LINE__ << std::endl;
   return nodes_executed;
 }
 

@@ -35,7 +35,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   int stages = 4;
   bool adaptable = false;
 
-//   std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
+   std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   NullUnit void_unit;
   int number_of_data_items = 100;
@@ -47,11 +47,11 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   pipeQueue *dataIn = new pipeQueue(qSize, debug_flag);
   pipeQueue *dataOut = new pipeQueue(qSize, debug_flag);
   Pipeline *pipe = new Pipeline(new Sleeper, dataIn, dataOut, threadMult * thread[0], static_cast<pipeData::dataPacket>(&sleepT[0]), profiling);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+//  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
   pipe->AddProcessingUnit(new Sleeper, threadMult * thread[1], static_cast<pipeData::dataPacket>(&sleepT[1]), 3, 20, 1);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+//  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
   pipe->AddProcessingUnit(new Sleeper, threadMult * thread[2], static_cast<pipeData::dataPacket>(&sleepT[2]), 3, 20, 1);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+//  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
   auto node = pipe->AddProcessingUnit(new Sleeper, threadMult * thread[3], static_cast<pipeData::dataPacket>(&sleepT[3]), 3, 10, 1);
   auto fromPipe = node->out_data_queue();
   pipe->RunPipe();
@@ -63,8 +63,9 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   int allocated_memory = 0;
   for (int i = 0; i < number_of_data_items; ++i)
   {
+  std::cout << __func__ << " : " << __LINE__ << std::endl;
     // Create new data items until they start returning from the pipe
-    if ((data = (pipeData *)fromPipe->Pop(false)) == nullptr)
+    if ((data = (pipeData *)dataOut->Pop(false)) == nullptr)
     {
       std::cout << "Allocate a new data item ";
       data = new pipeData(nullptr);
@@ -78,7 +79,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
     }
 
     // Do something with the data
-    //    sleep(1);
+//    sleep(1);
 
     dataId = *static_cast<int *>(data->GetExtraData("DATA_ID"));
 

@@ -31,9 +31,9 @@
 
 #pragma once
 
-//#include "memory_manager.h"
+// #include "memory_manager.h"
 #include "pipeQueue.h"
-//#include "pipe_node.h"
+// #include "pipe_node.h"
 
 class PipeNode; // Forward defintion
 
@@ -47,58 +47,59 @@ class PipeNode; // Forward defintion
  * and a pointer to the original data that was stored initially with the
  * creation of the class.
  */
-class pipeData {
-  public:
-    
-    using dataPacket = void*;
-    /**
-     * @brief This structure works like a std::pair but its member names are
-     * meaningful and are used to store data paired to a particular key.
-     */
-    struct DataKey {
-      std::string key; /**< The key used to find the data associated */
-      dataPacket data;      /**< The extra data stored*/
-    };
+class pipeData
+{
+public:
+  using dataPacket = void *;
+  /**
+   * @brief This structure works like a std::pair but its member names are
+   * meaningful and are used to store data paired to a particular key.
+   */
+  struct DataKey
+  {
+    std::string key; /**< The key used to find the data associated */
+    void* data; /**< The extra data stored*/
+  };
 
-    /**
-     * @brief Set the DataKey structure to the given key and data
-     *
-     * @return True if the key is unique and flase otherwise.
-     */
-    bool setDataKey(std::string key, dataPacket data);
+  /**
+   * @brief Set the DataKey structure to the given key and data
+   *
+   * @return True if the key is unique and flase otherwise.
+   */
+  bool setDataKey(std::string key, dataPacket data);
 
-    /**
-     * @brief Check if the given key exists in the pipeData object
-     *
-     * @return True if the key exists, false otgherwise
-     */
-    bool isKey(std::string key) const;
+  /**
+   * @brief Check if the given key exists in the pipeData object
+   *
+   * @return True if the key exists, false otgherwise
+   */
+  bool isKey(std::string key) const;
 
-    // The data constructor
-    pipeData(dataPacket, bool = false);
+  // The data constructor
+  pipeData(dataPacket, bool = false);
 
-    // The data destructor
-    ~pipeData();
+  // The data destructor
+  ~pipeData();
 
-    // Pushes the struct {key, data} to the extra data allocator
-    void PushExtraData(DataKey *);
+  // Pushes the struct {key, data} to the extra data allocator
+  void PushExtraData(DataKey *);
 
-    // Gets the pointer to the extra data so you can manipulate it
-    void *GetExtraData(std::string) const;
+  // Gets the pointer to the extra data so you can manipulate it
+void* GetExtraData(std::string) const;
 
-    // Gets the initial data stored in the class
-dataPacket data() const;
+  // Gets the initial data stored in the class
+  dataPacket data() const;
 
-    void *resetExtraData(std::string key, dataPacket newData);
+  dataPacket resetExtraData(std::string key, dataPacket newData);
 
-    PipeNode *getNodeData() { return node; };
+  PipeNode *getNodeData() { return node; };
 
-    void setNodeData(PipeNode *nodeData) { node = nodeData; };
+  void setNodeData(PipeNode *nodeData) { node = nodeData; };
 
-  private:
-    dataPacket data_;
-    unsigned int index_;
-    std::vector<DataKey *> extra_data_;
-    bool debug_;
-    PipeNode *node;
+private:
+  dataPacket data_;
+  unsigned int index_;
+  std::vector<DataKey *> extra_data_;
+  bool debug_;
+  PipeNode *node;
 };

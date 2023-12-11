@@ -68,7 +68,7 @@ void pipeData::PushExtraData(DataKey *extra_data)
  *
  * @param key The key to lookup in the vector
  */
-pipeData::dataPacket pipeData::GetExtraData(std::string key) const
+void* pipeData::GetExtraData(std::string key) const
 {
 
   for (const auto &entry : extra_data_)

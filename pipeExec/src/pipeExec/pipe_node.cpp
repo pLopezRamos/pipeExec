@@ -7,7 +7,7 @@
  * Contact: lopez.ramos.pablo@gmail.com
  */
 #include "pipe_node.h"
-
+//#include "pipeMapper.h"
 #include <cstdio>
 
 /**
@@ -105,8 +105,10 @@ PipeNode::nodeCmd PipeNode::getCmd()
   }
 }
 
-PipeNode *PipeNode::getPrev() const { return prev_; };
-PipeNode *PipeNode::getNext() const { return next_; };
+//PipeNode *PipeNode::getPrev() const { return prev_; };
+//PipeNode *PipeNode::getNext() const { return next_; };
+pipeMapper::nodeId PipeNode::getPrevAddress() const { return prev_address_; };
+pipeMapper::nodeId PipeNode::getNodeAddress() const { return node_address_; };
 
 /**
  * @brief Gets the ID of the current node
@@ -206,14 +208,16 @@ void PipeNode::setCmd(PipeNode::nodeCmd cmd) { cmd_.push_back(cmd); }
  *
  * @param prev A pointer to the previousnode.
  */
-void PipeNode::setPrev(PipeNode *prev) { prev_ = prev; }
+//void PipeNode::setPrev(PipeNode *prev) { prev_ = prev; }
+void PipeNode::setPrevAddress(pipeMapper::nodeId prev) { PipeNode::prev_address_ = prev; }
 
 /**
  * @brief Set a pointer to the previous node.
  *
  * @param prev A pointer to the previousnode.
  */
-void PipeNode::setNext(PipeNode *next) { next_ = next; }
+//void PipeNode::setNext(PipeNode *next) { next_ = next; }
+void PipeNode::setNodeAddress(pipeMapper::nodeId node) { PipeNode::node_address_ = node; }
 
 /**
  * @brief Sets the ID of the current node

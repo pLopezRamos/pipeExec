@@ -40,16 +40,16 @@ void Drano::Run(pipeData::dataPacket data)
 
   auto pdata = (pipeData*)data;
   auto node = pdata->getNodeData();
-  auto outQueue = node->out_data_queue();
+//  auto outQueue = node->out_data_queue();
   auto inQueue = node->in_data_queue();
   auto inCount = inQueue->queue_count();
-  auto outCount = outQueue->queue_count();
+//  auto outCount = outQueue->queue_count();
   auto maxSize = outQueue->max_size();
   auto cmd = PipeNode::nodeCmd::NO_OP;
 
- std::cout << " node id = " << node->node_id() <<" IN = " << inCount << " OUT " << outCount;
+ std::cout << " node id = " << node->node_id() <<" IN = " << inCount;
 
-  if ( outCount > inCount ) cmd = PipeNode::nodeCmd::ADD_THR;
+  if ( inCount ) cmd = PipeNode::nodeCmd::ADD_THR;
   else if ( adaptable_ ) {
       if ( outCount < inCount ) cmd = PipeNode::nodeCmd::END_THR;
   }
