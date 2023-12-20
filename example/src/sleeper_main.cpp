@@ -30,12 +30,12 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 {
   Sleeper sleepUnit[4];
   Drano dranoUnit[4];
-  int thread[4] = {1, 9, 3, 1};
+  int thread[4] = {1, 1, 1, 1};
   int sleepT[4] = {1, 9, 3, 1};
   int stages = 4;
   bool adaptable = false;
 
-   std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
+//   std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   NullUnit void_unit;
   int number_of_data_items = 100;
@@ -47,11 +47,11 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   pipeQueue *dataIn = new pipeQueue(qSize, debug_flag);
   pipeQueue *dataOut = new pipeQueue(qSize, debug_flag);
   Pipeline *pipe = new Pipeline(new Sleeper, dataIn, dataOut, threadMult * thread[0], static_cast<pipeData::dataPacket>(&sleepT[0]), profiling);
-//  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
   pipe->AddProcessingUnit(new Sleeper, threadMult * thread[1], static_cast<pipeData::dataPacket>(&sleepT[1]), 3, 20, 1);
-//  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
   pipe->AddProcessingUnit(new Sleeper, threadMult * thread[2], static_cast<pipeData::dataPacket>(&sleepT[2]), 3, 20, 1);
-//  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
+  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
   auto node = pipe->AddProcessingUnit(new Sleeper, threadMult * thread[3], static_cast<pipeData::dataPacket>(&sleepT[3]), 3, 10, 1);
   auto fromPipe = node->out_data_queue();
   pipe->RunPipe();
@@ -63,7 +63,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   int allocated_memory = 0;
   for (int i = 0; i < number_of_data_items; ++i)
   {
-  std::cout << __func__ << " : " << __LINE__ << std::endl;
+//  std::cout << __func__ << " : " << __LINE__ << std::endl;
     // Create new data items until they start returning from the pipe
     if ((data = (pipeData *)dataOut->Pop(false)) == nullptr)
     {

@@ -1,11 +1,11 @@
-#include "pipeline.h"
+#include "mesh.h"
 
 #include <cstdio>
 #include <string>
 #include <iostream>
 
 /**
- * @brief Constructor for the Pipeline class
+ * @brief Constructor for the Mesh class
  *
  * @details Sets the first node for the execution list
  *
@@ -16,8 +16,8 @@
  * @param initData data to be passed to the Init() method of the processing unit
  *
  */
-Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQueue *data_out, int instances, pipeData::dataPacket initData, bool debug, bool profiling)
-    : debug_(debug), show_profiling_(profiling), node_number_(0)
+Mesh::Mesh(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQueue *data_out, int instances, pipeData::dataPacket initData)
+    : node_number_(0)
 {
 
   PipeNode *first_node = new PipeNode;
@@ -32,7 +32,7 @@ Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQu
   first_node->number_of_instances(instances);
   firstNode_ = first_node;
   lastNode_ = first_node;
-  first_node->setNodeAddress(oneDimPipe.addNode(first_node));
+  first_node->setNodeAddress(twoDimPipe.addNode(first_node));
   first_node->setPrevAddress(first_node->getNodeAddress());
   prev_address_ = first_node->getNodeAddress();
   
@@ -43,7 +43,7 @@ Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQu
 /**
  * @brief Default destructor for the pipeline.
  */
-Pipeline::~Pipeline() {}
+Mesh::~Mesh() {}
 
 /**
  * @brief Add a new node to the execution list.
@@ -60,7 +60,7 @@ Pipeline::~Pipeline() {}
  *
  * @returns a pointer to the node.
  */
-PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
+PipeNode *Mesh::meshAddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
 {
 
   PipeNode *new_node = new PipeNode;
@@ -77,15 +77,15 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
   new_node->max_instances(maxInstances);
   new_node->min_instances(minInstances);
 //  std::cout << __func__ << ":" << __LINE__ << std::endl;
-   new_node->in_data_queue(new pipeQueue(queueSize, debug_));
+   new_node->in_data_queue(new pipeQueue(queueSize, false));
 //  std::cout << __func__ << ":" << __LINE__ << std::endl;
   lastNode_ = new_node;
   ++node_number_;
-  new_node->setNodeAddress(oneDimPipe.addNode(new_node));
+  new_node->setNodeAddress(twoDimPipe.addNode(new_node));
 //  std::cout << __func__ << ":" << __LINE__ << std::endl;
   new_node->setPrevAddress(prev_address_);
 
-  auto prev_ = (PipeNode*)oneDimPipe.getPipeNode(prev_address_);
+  auto prev_ = (PipeNode*)twoDimPipe.getPipeNode(prev_address_);
   prev_->last_node(false);
   prev_address_ = new_node->getNodeAddress();
 
@@ -108,7 +108,7 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
  *
  * @returns a pointer to the node.
  */
-PipeNode *Pipeline::InsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
+PipeNode *Mesh::meshInsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
 {
   return nullptr;
 }
@@ -124,10 +124,9 @@ PipeNode *Pipeline::InsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterfac
  * @param id The thread id. Especially used for debug information.
  * @param mtx The mutex to keep safe the initialization of the node while its
  * cloning instances of the processing unit.
- * @param debug The debug flag
  *
  */
-void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::vector<Pipeline::Profiling> &profiling_information, pipeMapper &map, bool debug = false, bool profiling = false)
+void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
 {
 
   ProcessingUnitInterface *processing_unit = node->processing_unit();
@@ -144,21 +143,6 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
   }
 
   mtx.unlock();
-
-  // TIMESTAMP
-  if (profiling)
-  {
-    prof.lock();
-    profiling_information.push_back({.node_id = node->node_id(),
-                                     .thread_id = n_id,
-                                     .cycles_start = rdtsc(),
-                                     .cycles_end = 0,
-                                     .time_start = STOPWATCH_NOW,
-                                     .time_end = STOPWATCH_NOW,
-                                     .sys_time_start = clock(),
-                                     .sys_time_end = 0});
-    prof.unlock();
-  }
 
   // Starts the data at the processing unit, the user must be aware of the arg
   processing_unit->Init(node->extra_args());
@@ -187,7 +171,7 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
             {
               mtx.lock();
               std::cout << "NODE " << node->node_id() << " LAUNCH NEW INSTANCE " << std::endl;
-              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(prof), std::ref(profiling_information), std::ref(map), debug, profiling));
+              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(map)));
               node->number_of_instances(node->number_of_instances() + 1);
             }
             break;
@@ -246,20 +230,6 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
       if (terminate)
         processing_unit->End(data);
 
-      if (profiling)
-      {
-        prof.lock();
-        for (auto &info : profiling_information)
-        {
-          if (info.node_id == node->node_id() && info.thread_id == n_id)
-          {
-            info.cycles_end = rdtsc();
-            info.time_end = STOPWATCH_NOW;
-            info.sys_time_end = clock();
-          }
-        }
-        prof.unlock();
-      }
     } while (!terminate);
   }
   catch (...)
@@ -274,28 +244,24 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
  *
  * @return The number of nodes executed
  */
-int Pipeline::RunPipe()
+int Mesh::RunMesh()
 {
   
   int nodes_executed = 0;
-  //  auto node = firstNode_;
   auto id = pipeMapper::nodeId(0, 0, 0);
   PipeNode* node;
   bool done = false;
 
   do
   {
-    node = (PipeNode*)oneDimPipe.getPipeNode(id);
+    node = (PipeNode*)twoDimPipe.getPipeNode(id);
     auto numberOfInstances = node->number_of_instances();
     for (auto instanceIt = 0; instanceIt < numberOfInstances; ++instanceIt)
     {
       try
       {
         execution_mutex_.lock();
-        node->PushThread(new std::thread(
-            RunNode, node, instanceIt, std::ref(execution_mutex_),
-            std::ref(profiling_mutex_), std::ref(profiling_list_), std::ref(oneDimPipe), debug_,
-            show_profiling_));
+        node->PushThread(new std::thread(RunNode, node, instanceIt, std::ref(execution_mutex_), std::ref(twoDimPipe)));
       }
       catch (...)
       {
@@ -307,26 +273,4 @@ int Pipeline::RunPipe()
     id.x += 1;
   } while (!done);
   return nodes_executed;
-}
-
-void Pipeline::Profile()
-{
-  std::sort(profiling_list_.begin(), profiling_list_.end(),
-            [](const Pipeline::Profiling &a, const Pipeline::Profiling &b)
-            {
-              return a.node_id <= b.node_id && a.thread_id <= b.thread_id;
-            });
-
-  for (Profiling profile : profiling_list_)
-  {
-    printf(
-        "sNODE %d\t THREAD %d\n    Time running: %ldms\n    Cycles since "
-        "init of run: %lu\n    System time: % fms\n ",
-        profile.node_id, profile.thread_id,
-        TIME_IN_MS(profile.time_start, profile.time_end),
-        profile.cycles_end - profile.cycles_start,
-        ((double)(profile.sys_time_end - profile.sys_time_start) /
-         CLOCKS_PER_SEC) *
-            1000);
-  }
 }

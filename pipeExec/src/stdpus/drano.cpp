@@ -44,19 +44,19 @@ void Drano::Run(pipeData::dataPacket data)
   auto inQueue = node->in_data_queue();
   auto inCount = inQueue->queue_count();
 //  auto outCount = outQueue->queue_count();
-  auto maxSize = outQueue->max_size();
+//  auto maxSize = outQueue->max_size();
   auto cmd = PipeNode::nodeCmd::NO_OP;
 
  std::cout << " node id = " << node->node_id() <<" IN = " << inCount;
 
   if ( inCount ) cmd = PipeNode::nodeCmd::ADD_THR;
-  else if ( adaptable_ ) {
+/*  else if ( adaptable_ ) {
       if ( outCount < inCount ) cmd = PipeNode::nodeCmd::END_THR;
-  }
+  }*/
 
   if ( cmd != PipeNode::nodeCmd::NO_OP ) node->setCmd(cmd);
 
   std::cout << " cmd = " << cmd << std::endl;
 
-  lastCount_ = outCount;
+  lastCount_ = inCount;
 }
