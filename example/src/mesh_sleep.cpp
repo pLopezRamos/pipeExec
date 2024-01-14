@@ -22,39 +22,46 @@
 #include "sleeper.h"
 #include "drano.h"
 #include "null_unit.h"
+#include "mesh.h"
+#include "distributer.h"
 #include <random>
 #include <iostream>
 #include <unistd.h> // for linux
 
-int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
+int MeshMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 {
-  Sleeper sleepUnit[4];
   Drano dranoUnit[4];
   int thread[4] = {1, 1, 1, 1};
   int sleepT[4] = {1, 9, 3, 1};
   int stages = 4;
   bool adaptable = false;
 
-//   std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
+//std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   NullUnit void_unit;
-  int number_of_data_items = 100;
-  int threadMult = 1;
-  int qSize = 10;
+  int number_of_data_items = 1000;
+  unsigned int xRange = 10;
+  unsigned int yRange = 10;
+  unsigned int qSize = 5;
+
+  Mesh *mesh = new Mesh(xRange, yRange, 5, false);
+  for (unsigned int x = 0; x < xRange; ++x)
+  {
+    for (unsigned int y = 0; y < yRange; ++y)
+    {
+      auto node = mesh->AddProcessingUnit(new Sleeper, 3, x, y, static_cast<pipeData::dataPacket>(&sleepT[2]),
+                                          5, 20, 5);
+    }
+  }
+
+  std::vector<unsigned int> feeds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  auto dataIn = new pipeQueue(qSize);
+  auto dataOut = mesh->out_queue();
+  auto mesh_start = new distributer(mesh, dataIn, feeds);
 
   printf("Running %d stage pipe using queue size = %d\n", stages, qSize);
 
-  pipeQueue *dataIn = new pipeQueue(qSize, debug_flag);
-  pipeQueue *dataOut = new pipeQueue(qSize, debug_flag);
-  Pipeline *pipe = new Pipeline(new Sleeper, dataIn, dataOut, threadMult * thread[0], static_cast<pipeData::dataPacket>(&sleepT[0]), profiling);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
-  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[1], static_cast<pipeData::dataPacket>(&sleepT[1]), 3, 20, 1);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
-  pipe->AddProcessingUnit(new Sleeper, threadMult * thread[2], static_cast<pipeData::dataPacket>(&sleepT[2]), 3, 20, 1);
-  pipe->AddProcessingUnit(new Drano, 1, static_cast<pipeData::dataPacket>(&adaptable), 6);
-  auto node = pipe->AddProcessingUnit(new Sleeper, threadMult * thread[3], static_cast<pipeData::dataPacket>(&sleepT[3]), 3, 10, 1);
-  auto fromPipe = node->out_data_queue();
-  pipe->RunPipe();
+  mesh->RunMesh();
 
   printf("Processing %d data items\n", number_of_data_items);
 
@@ -63,7 +70,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   int allocated_memory = 0;
   for (int i = 0; i < number_of_data_items; ++i)
   {
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
+    //  std::cout << __func__ << " : " << __LINE__ << std::endl;
     // Create new data items until they start returning from the pipe
     if ((data = (pipeData *)dataOut->Pop(false)) == nullptr)
     {
@@ -72,6 +79,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
       data->PushExtraData(new pipeData::DataKey{"DATA_ID", static_cast<pipeData::dataPacket>(new int(i))});
       // data->PushExtraData(new pipeData::DataKey{sleeper_unit[0].getKey(), static_cast<void*>(new int(0))});
       ++allocated_memory;
+//      std::cout << __func__ << " : " << __LINE__ << std::endl;
     }
     else
     {
@@ -79,13 +87,13 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
     }
 
     // Do something with the data
-//    sleep(1);
+    //    sleep(1);
 
     dataId = *static_cast<int *>(data->GetExtraData("DATA_ID"));
 
     std::cout << "dataId =  " << dataId << std::endl;
 
-    dataIn->Push(static_cast<pipeData::dataPacket>(data));
+    mesh_start->send(static_cast<pipeData::dataPacket>(data));
   }
 
   std::cout << "Waiting for pipe to drain " << allocated_memory << " data buffers\n";
@@ -93,12 +101,10 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   for (int i = 0; i < allocated_memory; ++i)
   {
     std::cout << " Popping item = " << i;
-    data = (pipeData *)fromPipe->Pop();
+    data = (pipeData *)dataOut->Pop();
     dataId = *(int *)data->GetExtraData("DATA_ID");
     std::cout << " dataId =  " << dataId << std::endl;
   }
-
-  pipe->Profile();
 
   return 0;
 }
@@ -106,7 +112,7 @@ int SleeperMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 int main()
 {
 
-  SleeperMain(false, false, false);
+  MeshMain(false, false, false);
 
   exit(0);
 }

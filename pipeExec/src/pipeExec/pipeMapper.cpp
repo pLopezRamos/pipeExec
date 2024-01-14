@@ -113,6 +113,15 @@ void *pipeMapper::getPipeNode(pipeMapper::nodeId id) const
     return nodes_.at(id);
 }
 
+void *pipeMapper::getPipeNode(std::string id) const {
+    if (!pipeMapper::nodeExists(id))
+    {
+        throw std::out_of_range("[" + id + "] - does not exists.");
+    }
+
+    auto address = ids_.at(id);
+    return nodes_.at(address.back());
+}
 bool pipeMapper::nodeExists(pipeMapper::nodeId id) const
 {
 /*    for (const auto &pair : nodes_)

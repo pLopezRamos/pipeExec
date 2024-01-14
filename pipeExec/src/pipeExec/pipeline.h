@@ -96,7 +96,7 @@ public:
   PipeNode *getHead() { return firstNode_; };
   PipeNode *getTail() { return lastNode_; };
 
-  pipeMapper oneDimPipe;
+  pipeMapper *oneDimPipe;
 private:
   std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
                                              be executed in order */

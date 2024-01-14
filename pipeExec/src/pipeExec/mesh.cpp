@@ -5,6 +5,24 @@
 #include <iostream>
 
 /**
+ * @brief Default destructor for the Mesh.
+ */
+Mesh::~Mesh()
+{
+
+  PipeNode *node;
+
+  for (auto x = 0; x < xRange_; ++x)
+  {
+    for (auto y = 0; y < yRange_; ++y)
+    {
+      node = (PipeNode *)twoDimPipe->getPipeNode(pipeMapper::nodeId(x, y, 0));
+      delete (node);
+    }
+  }
+}
+
+/**
  * @brief Constructor for the Mesh class
  *
  * @details Sets the first node for the execution list
@@ -16,40 +34,43 @@
  * @param initData data to be passed to the Init() method of the processing unit
  *
  */
-Mesh::Mesh(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQueue *data_out, int instances, pipeData::dataPacket initData)
-    : node_number_(0)
+Mesh::Mesh(unsigned int xRange, unsigned int yRange, unsigned int queueSize, bool closed)
 {
 
-  PipeNode *first_node = new PipeNode;
+  twoDimPipe = new pipeMapper();
 
-  first_node->extra_args(initData);
-  first_node->ctl_sema = new Semaphore(0);
-  first_node->node_id(node_number_);
-  first_node->last_node(true);
-  first_node->out_data_queue(data_out);
-  first_node->in_data_queue(data_in);
-  first_node->processing_unit(procUnit);
-  first_node->number_of_instances(instances);
-  firstNode_ = first_node;
-  lastNode_ = first_node;
-  first_node->setNodeAddress(twoDimPipe.addNode(first_node));
-  first_node->setPrevAddress(first_node->getNodeAddress());
-  prev_address_ = first_node->getNodeAddress();
-  
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
-  ++node_number_;
+  PipeNode *new_node;
+
+  for (auto x = 0; x < xRange; ++x)
+  {
+    for (auto y = 0; y < yRange; ++y)
+    {
+      new_node = new PipeNode;
+      new_node->extra_args(nullptr);
+      new_node->ctl_sema = new Semaphore(0);
+      new_node->node_id(node_number_);
+      new_node->last_node(false);
+      new_node->processing_unit(nullptr);
+      new_node->number_of_instances(1);
+      new_node->max_instances(1);
+      new_node->min_instances(1);
+      new_node->in_data_queue(new pipeQueue(queueSize, false));
+      new_node->setNodeAddress(twoDimPipe->addNode(new_node, "", pipeMapper::nodeId(x, y, 0)));
+      ++node_number_;
+    }
+    new_node->last_node(true);
+  }
+  xRange_ = xRange;
+  yRange_ = yRange;
+
+  out_queue(new pipeQueue(queueSize));
 }
 
 /**
- * @brief Default destructor for the pipeline.
- */
-Mesh::~Mesh() {}
-
-/**
- * @brief Add a new node to the execution list.
+ * @brief Adda processing unit to the node
  *
- * @details Creates a new node by, among other things, linking the node with the previous node, setting as the imput queue
- * the previous node output queue, creating the node output queue and adding the node to the execution list.
+ * @details Add a processsing unit and its attributes a the node defined by its x and y
+ * coordinates
  *
  * @param procUnit a pointer to a processing unit object.
  * @param instances number of instances of the processing unit to create
@@ -57,60 +78,39 @@ Mesh::~Mesh() {}
  * @param queueSize the size of the output queue
  * @param maxInstances the maximun number of instances that can be reached when dinamicaly increased.
  * @param minInstances the minimum number of instances that can be left when dinamicaly decreasing.
+ * @param x the x coordinate of the node
+ * @param y the y coordinate of the node
  *
  * @returns a pointer to the node.
+ *
+ * @throws std::invalid_argument
  */
-PipeNode *Mesh::meshAddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
+PipeNode *Mesh::AddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, unsigned int x, unsigned int y, pipeData::dataPacket initData, int maxInstances, int minInstances, unsigned int queueSize)
 {
 
-  PipeNode *new_node = new PipeNode;
+  if (x > xRange_ || y > yRange_)
+  {
+    throw std::invalid_argument("address out of range.");
+  }
 
-  new_node->extra_args(initData);
+  auto node = (PipeNode *)twoDimPipe->getPipeNode(pipeMapper::nodeId(x, y, 0));
 
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
-  int prev_idx = node_number_ - 1;
-  new_node->ctl_sema = new Semaphore(0);
-  new_node->node_id(node_number_);
-  new_node->last_node(true);
-  new_node->processing_unit(procUnit);
-  new_node->number_of_instances(instances);
-  new_node->max_instances(maxInstances);
-  new_node->min_instances(minInstances);
-//  std::cout << __func__ << ":" << __LINE__ << std::endl;
-   new_node->in_data_queue(new pipeQueue(queueSize, false));
-//  std::cout << __func__ << ":" << __LINE__ << std::endl;
-  lastNode_ = new_node;
-  ++node_number_;
-  new_node->setNodeAddress(twoDimPipe.addNode(new_node));
-//  std::cout << __func__ << ":" << __LINE__ << std::endl;
-  new_node->setPrevAddress(prev_address_);
+  node->extra_args(initData);
+  if (node->processing_unit() != nullptr)
+  {
+    node->processing_unit()->End();
+  }
+  node->processing_unit(procUnit);
+  node->number_of_instances(instances);
+  node->max_instances(maxInstances);
+  node->min_instances(minInstances);
+  if (queueSize != 0)
+  {
+    delete (node->in_data_queue());
+    node->in_data_queue(new pipeQueue(queueSize, false));
+  }
 
-  auto prev_ = (PipeNode*)twoDimPipe.getPipeNode(prev_address_);
-  prev_->last_node(false);
-  prev_address_ = new_node->getNodeAddress();
-
-  return new_node;
-}
-
-/**
- * @brief Inserts a new node to the execution list.
- *
- * @details Inserts a new node after the given node by, among other things, linking the node with the previous node, setting as the imput queue
- * the previous node output queue, creating the node output queue and adding the node to the execution list.
- *
- * @param pNode a pointer to the previous node.
- * @param procUnit a pointer to a processing unit object.
- * @param instances number of instances of the processing unit to create
- * @param initData data to be passed to the Init() method of the processing unit
- * @param queueSize the size of the output queue
- * @param maxInstances the maximun number of instances that can be reached when dinamicaly increased.
- * @param minInstances the minimum number of instances that can be left when dinamicaly decreasing.
- *
- * @returns a pointer to the node.
- */
-PipeNode *Mesh::meshInsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterface *procUnit, int instances, pipeData::dataPacket initData, int queueSize, int maxInstances, int minInstances)
-{
-  return nullptr;
+  return node;
 }
 
 /**
@@ -126,12 +126,12 @@ PipeNode *Mesh::meshInsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterfac
  * cloning instances of the processing unit.
  *
  */
-void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
+void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper *map, pipeQueue *outQueue)
 {
 
   ProcessingUnitInterface *processing_unit = node->processing_unit();
 
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
+  // std::cout << __func__ << " : " << __LINE__ << std::endl;
   if (n_id != 0)
   {
     processing_unit = node->processing_unit()->Clone();
@@ -144,17 +144,19 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
 
   mtx.unlock();
 
-  // Starts the data at the processing unit, the user must be aware of the arg
+  // std::cout << __func__ << " : " << __LINE__ << std::endl;
+  //  Starts the data at the processing unit, the user must be aware of the arg
   processing_unit->Init(node->extra_args());
 
   try
   {
+    // std::cout << __func__ << " : " << __LINE__ << std::endl;
     auto terminate = false;
     do
     {
-//      std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
+      // std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
       auto data = node->in_data_queue()->Pop();
-      auto pnode = (PipeNode*)map.getPipeNode(node->getPrevAddress());
+      auto pnode = (PipeNode *)map->getPipeNode(node->getPrevAddress());
       if (pnode != node)
       {
         pnode->ctl_mtx.lock();
@@ -164,18 +166,21 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
         {
           switch (cmd)
           {
-          case PipeNode::nodeCmd::NO_OP:  std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::NO_OP:
+            std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
             break;
-          case PipeNode::nodeCmd::ADD_THR:   std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::ADD_THR:
+            std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
             if (node->max_instances() == 0 || node->max_instances() > node->number_of_instances())
             {
               mtx.lock();
               std::cout << "NODE " << node->node_id() << " LAUNCH NEW INSTANCE " << std::endl;
-              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(map)));
+              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(map), std::ref(outQueue)));
               node->number_of_instances(node->number_of_instances() + 1);
             }
             break;
-          case PipeNode::nodeCmd::END_THR:  std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::END_THR:
+            std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
             if (node->min_instances() == 0 || node->min_instances() < node->number_of_instances())
             {
               if (node->number_of_instances() > 1)
@@ -195,7 +200,7 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
         pnode->ctl_mtx.unlock();
       }
 
-//     std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
+      // std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
 
       if (node->processing_unit() != processing_unit)
       {
@@ -207,29 +212,61 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
       auto pData = (pipeData *)data;
       pData->setNodeData(node);
 
-      //      std::cout << "NODE " << node->node_id() << " START RUN " << std::endl;
-      // Runs the processing_unit
+      // std::cout << "NODE " << node->node_id() << " START RUN " << std::endl;
+      //  Runs the processing_unit
       processing_unit->Run(data);
-      //      std::cout << "NODE " << node->node_id() << " END   RUN " << std::endl;
+      // std::cout << "NODE " << node->node_id() << " END   RUN " << std::endl;
 
-      auto id = node->getNodeAddress();
-      if (node->last_node())
+      // Check if the proccesing unit wants to write to a named address
+      auto namedNode = (std::string*)pData->GetExtraData("_#NAMED_ADDRESS#_");
+      PipeNode *nextNode;
+      pipeMapper::nodeId *nextNodeId = nullptr;
+      if (namedNode != nullptr)
       {
-        id.x = id.y = id.z = 0;
-        auto next_node = (PipeNode*)map.getPipeNode(id);
-        next_node->out_data_queue()->Push(data);
+        // If the address is WRITE_OUT then write to the output queue
+        if ( *namedNode == "_#WRITE_OUT#_") {
+          outQueue->Push(data);
+        } else {
+          // If no, get the node associated with the address
+        nextNode = (PipeNode *)map->getPipeNode(*namedNode);
+        }
       }
       else
       {
-        id.x += 1;
-        auto next_node = (PipeNode*)map.getPipeNode(id);
-        next_node->in_data_queue()->Push(data);
+        // If the address is NEXT_ADDRESS, you get a nodeId else you get nullptr
+        nextNodeId = (pipeMapper::nodeId *)pData->GetExtraData("_#NEXT_ADDRESS#_");
       }
-      //      std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
+
+      if (nextNodeId != nullptr)
+      {
+        // Check that the node exists
+        if (map->nodeExists(*nextNodeId))
+        {
+          // Get the node assiated with the address
+          auto next_node = (PipeNode *)map->getPipeNode((pipeMapper::nodeId)*nextNodeId);
+          next_node->in_data_queue()->Push(data);
+        }
+      }
+      else
+      {
+        // If not address given, just go to the next node
+        auto id = node->getNodeAddress();
+        if (node->last_node())
+        {
+          outQueue->Push(data);
+        }
+        else
+        {
+          id.y += 1;
+          // std::cout << "NODE id.x = " << id.x << " id.y = " << id.y << std::endl;
+          auto next_node = (PipeNode *)map->getPipeNode(id);
+          next_node->in_data_queue()->Push(data);
+        }
+      }
+      // std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
 
       if (terminate)
         processing_unit->End(data);
-
     } while (!terminate);
   }
   catch (...)
@@ -246,31 +283,33 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper &map)
  */
 int Mesh::RunMesh()
 {
-  
+
   int nodes_executed = 0;
   auto id = pipeMapper::nodeId(0, 0, 0);
-  PipeNode* node;
+  PipeNode *node;
   bool done = false;
 
-  do
+  for (int x = 0; x < xRange_; ++x)
   {
-    node = (PipeNode*)twoDimPipe.getPipeNode(id);
-    auto numberOfInstances = node->number_of_instances();
-    for (auto instanceIt = 0; instanceIt < numberOfInstances; ++instanceIt)
+    for (int y = 0; y < yRange_; ++y)
     {
-      try
+      node = (PipeNode *)twoDimPipe->getPipeNode(pipeMapper::nodeId(x, y, 0));
+      auto numberOfInstances = node->number_of_instances();
+      for (auto instanceIt = 0; instanceIt < numberOfInstances; ++instanceIt)
       {
-        execution_mutex_.lock();
-        node->PushThread(new std::thread(RunNode, node, instanceIt, std::ref(execution_mutex_), std::ref(twoDimPipe)));
+        try
+        {
+          execution_mutex_.lock();
+          node->PushThread(new std::thread(
+              RunNode, node, instanceIt, std::ref(execution_mutex_),
+              twoDimPipe, std::ref(out_queue_)));
+        }
+        catch (...)
+        {
+        }
       }
-      catch (...)
-      {
-      }
+      ++nodes_executed;
     }
-    ++nodes_executed;
-
-    done = node->last_node();
-    id.x += 1;
-  } while (!done);
+  }
   return nodes_executed;
 }

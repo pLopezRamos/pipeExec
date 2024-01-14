@@ -5,24 +5,25 @@ add_library(stdpus
 	number_printer.cpp
 	simple_indexer.cpp
 	sleeper.cpp
-  drano.cpp
-)
+	drano.cpp
+	distributer.cpp
+	)
 
 # Set the include directories
 include_directories(
-    ${CMAKE_HOME_DIRECTORY}/src/pipeExec
-)
+	${CMAKE_HOME_DIRECTORY}/src/pipeExec
+	)
 
 target_include_directories(stdpus
-    PUBLIC
+	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include>
-)
+	)
 
 install(TARGETS stdpus
 	EXPORT stdpusTargets
 	ARCHIVE DESTINATION lib
-)
+	)
 
 install(FILES
 	adder.h
@@ -32,7 +33,8 @@ install(FILES
 	number_printer.h
 	simple_indexer.h
 	sleeper.h
-  drano.h
+	drano.h
+	distributer.h
 
 	DESTINATION include/stdpus
-)
+	)

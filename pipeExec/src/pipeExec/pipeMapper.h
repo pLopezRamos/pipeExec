@@ -18,7 +18,6 @@ public:
     /// @param  unsigned int  Number of dimensions. Can be 1,2 or 3
     /// @param  unsigned int  The size in x. No limit if not given
     /// @param  unsigned int  The size in y. No limit if not given
-    /// @param  unsigned int  The size in z. No limit if not given
     /// @throws std::out_of_range if dimension is not 1, 2, or 3
     pipeMapper(unsigned int  = 1, unsigned int  = 0, unsigned int  = 0);
 
@@ -57,6 +56,7 @@ public:
     /// @return a pointer to a void
     /// @throws std::out_of_range if nodeId does not exist
     void* getPipeNode(nodeId) const;
+    void* getPipeNode(std::string) const;
 
     /// @brief Checks if the given node id is already assigned
     /// @param  nodeId The node id
@@ -78,6 +78,10 @@ public:
     /// @brief return the list of node ids
     /// @return a vector containing all the ids
     std::vector<pipeMapper::nodeId> getNodeIds() const { return idList_; };
+
+    unsigned int getXrange() const  { return xRange_; };
+    unsigned int getYrange() const  { return yRange_; };
+    unsigned int getZrange() const  { return zRange_; };
 
 private:
     uint dim_, xRange_, yRange_, zRange_;

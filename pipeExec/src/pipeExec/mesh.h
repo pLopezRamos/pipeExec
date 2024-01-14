@@ -51,15 +51,14 @@ class Mesh
 public:
 
   // Constructor for the Mesh class
-  Mesh(ProcessingUnitInterface *, pipeQueue *, pipeQueue *, int, pipeData::dataPacket);
+  Mesh(unsigned int xRange, unsigned int yRange, unsigned int queueSize, bool closed = false);
 
   // Destructor of the Mesh
   ~Mesh();
 
   // Adds a new processing unit to the Mesh
-  PipeNode *meshAddProcessingUnit(ProcessingUnitInterface *, int, pipeData::dataPacket = nullptr, int = 2, int = 0, int = 0);
-
-  PipeNode *meshInsertProcessingUnit(PipeNode *, ProcessingUnitInterface *, int, pipeData::dataPacket = nullptr, int = 2, int = 0, int = 0);
+  PipeNode *AddProcessingUnit(ProcessingUnitInterface *procUnit, int instances, unsigned int x, unsigned int y, pipeData::dataPacket initData = nullptr,
+  int maxInstances= 0, int minInstances= 0, unsigned int queueSize = 0);
 
   // Runs the pipe making all the threads wait for an input
   int RunMesh();
@@ -67,7 +66,10 @@ public:
   PipeNode *getHead() { return firstNode_; };
   PipeNode *getTail() { return lastNode_; };
 
-  pipeMapper twoDimPipe;
+  void out_queue(pipeQueue *queue) { out_queue_ = queue; };
+  pipeQueue *out_queue() { return out_queue_; };
+
+  pipeMapper *twoDimPipe;
 
 private:
   std::vector<PipeNode *> execution_list_; /**< The list of nodes that need to
@@ -78,4 +80,7 @@ private:
   PipeNode *firstNode_;
   PipeNode *lastNode_;
   pipeMapper::nodeId prev_address_;
+  unsigned int xRange_;
+  unsigned int yRange_;
+  pipeQueue *out_queue_;
 };

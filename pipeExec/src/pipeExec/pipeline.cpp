@@ -21,6 +21,7 @@ Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQu
 {
 
   PipeNode *first_node = new PipeNode;
+  oneDimPipe = new pipeMapper();
 
   first_node->extra_args(initData);
   first_node->ctl_sema = new Semaphore(0);
@@ -32,11 +33,11 @@ Pipeline::Pipeline(ProcessingUnitInterface *procUnit, pipeQueue *data_in, pipeQu
   first_node->number_of_instances(instances);
   firstNode_ = first_node;
   lastNode_ = first_node;
-  first_node->setNodeAddress(oneDimPipe.addNode(first_node));
+  first_node->setNodeAddress(oneDimPipe->addNode(first_node));
   first_node->setPrevAddress(first_node->getNodeAddress());
   prev_address_ = first_node->getNodeAddress();
-  
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
+
+  //  std::cout << __func__ << " : " << __LINE__ << std::endl;
   ++node_number_;
 }
 
@@ -67,7 +68,7 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
 
   new_node->extra_args(initData);
 
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
+  //  std::cout << __func__ << " : " << __LINE__ << std::endl;
   int prev_idx = node_number_ - 1;
   new_node->ctl_sema = new Semaphore(0);
   new_node->node_id(node_number_);
@@ -76,16 +77,16 @@ PipeNode *Pipeline::AddProcessingUnit(ProcessingUnitInterface *procUnit, int ins
   new_node->number_of_instances(instances);
   new_node->max_instances(maxInstances);
   new_node->min_instances(minInstances);
-//  std::cout << __func__ << ":" << __LINE__ << std::endl;
-   new_node->in_data_queue(new pipeQueue(queueSize, debug_));
-//  std::cout << __func__ << ":" << __LINE__ << std::endl;
+  //  std::cout << __func__ << ":" << __LINE__ << std::endl;
+  new_node->in_data_queue(new pipeQueue(queueSize, debug_));
+  //  std::cout << __func__ << ":" << __LINE__ << std::endl;
   lastNode_ = new_node;
   ++node_number_;
-  new_node->setNodeAddress(oneDimPipe.addNode(new_node));
-//  std::cout << __func__ << ":" << __LINE__ << std::endl;
+  new_node->setNodeAddress(oneDimPipe->addNode(new_node));
+  //  std::cout << __func__ << ":" << __LINE__ << std::endl;
   new_node->setPrevAddress(prev_address_);
 
-  auto prev_ = (PipeNode*)oneDimPipe.getPipeNode(prev_address_);
+  auto prev_ = (PipeNode *)oneDimPipe->getPipeNode(prev_address_);
   prev_->last_node(false);
   prev_address_ = new_node->getNodeAddress();
 
@@ -127,12 +128,12 @@ PipeNode *Pipeline::InsertProcessingUnit(PipeNode *pNode, ProcessingUnitInterfac
  * @param debug The debug flag
  *
  */
-void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::vector<Pipeline::Profiling> &profiling_information, pipeMapper &map, bool debug = false, bool profiling = false)
+void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::vector<Pipeline::Profiling> &profiling_information, pipeMapper *map, bool debug = false, bool profiling = false)
 {
 
   ProcessingUnitInterface *processing_unit = node->processing_unit();
 
-//  std::cout << __func__ << " : " << __LINE__ << std::endl;
+  //  std::cout << __func__ << " : " << __LINE__ << std::endl;
   if (n_id != 0)
   {
     processing_unit = node->processing_unit()->Clone();
@@ -168,9 +169,9 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
     auto terminate = false;
     do
     {
-//      std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
+      //      std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
       auto data = node->in_data_queue()->Pop();
-      auto pnode = (PipeNode*)map.getPipeNode(node->getPrevAddress());
+      auto pnode = (PipeNode *)map->getPipeNode(node->getPrevAddress());
       if (pnode != node)
       {
         pnode->ctl_mtx.lock();
@@ -180,9 +181,11 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
         {
           switch (cmd)
           {
-          case PipeNode::nodeCmd::NO_OP:  std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::NO_OP:
+            std::cout << "Null command received nothing done - cmd = " << cmd << std::endl;
             break;
-          case PipeNode::nodeCmd::ADD_THR:   std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::ADD_THR:
+            std::cout << "Increment processing unit instances - cmd = " << cmd << std::endl;
             if (node->max_instances() == 0 || node->max_instances() > node->number_of_instances())
             {
               mtx.lock();
@@ -191,7 +194,8 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
               node->number_of_instances(node->number_of_instances() + 1);
             }
             break;
-          case PipeNode::nodeCmd::END_THR:  std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
+          case PipeNode::nodeCmd::END_THR:
+            std::cout << "Decrement processing unit instances - cmd = " << cmd << std::endl;
             if (node->min_instances() == 0 || node->min_instances() < node->number_of_instances())
             {
               if (node->number_of_instances() > 1)
@@ -211,7 +215,7 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
         pnode->ctl_mtx.unlock();
       }
 
-//     std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
+      //     std::cout << "NODE " << node->node_id() << " RUNNING INST " << n_id << " OF " << node->number_of_instances() << std::endl;
 
       if (node->processing_unit() != processing_unit)
       {
@@ -228,21 +232,60 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
       processing_unit->Run(data);
       //      std::cout << "NODE " << node->node_id() << " END   RUN " << std::endl;
 
-      auto id = node->getNodeAddress();
-      if (node->last_node())
+      /* auto id = node->getNodeAddress();
+       if (node->last_node())
+       {
+         id.x = id.y = id.z = 0;
+         auto next_node = (PipeNode*)map->getPipeNode(id);
+         next_node->out_data_queue()->Push(data);
+       }
+       else
+       {
+         id.x += 1;
+         auto next_node = (PipeNode*)map->getPipeNode(id);
+         next_node->in_data_queue()->Push(data);
+       }*/
+      //      std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
+
+      // Check if the proccesing unit wants to write to a named address
+      // If the address is NEXT_ADDRESS, you get a nodeId else you get nullptr
+      auto nextNode = (pipeMapper::nodeId *)pData->GetExtraData("_#NEXT_ADDRESS#_");
+
+      if (nextNode != nullptr)
       {
-        id.x = id.y = id.z = 0;
-        auto next_node = (PipeNode*)map.getPipeNode(id);
-        next_node->out_data_queue()->Push(data);
+        // Check that the node exists
+        if (map->nodeExists(*nextNode))
+        {
+          // Get the node assiated with the address
+          auto next_node = (PipeNode *)map->getPipeNode((pipeMapper::nodeId)*nextNode);
+          if (next_node->last_node())
+          {
+            next_node->out_data_queue()->Push(data);
+          }
+          else
+          {
+            next_node->in_data_queue()->Push(data);
+          }
+        }
       }
       else
       {
-        id.x += 1;
-        auto next_node = (PipeNode*)map.getPipeNode(id);
-        next_node->in_data_queue()->Push(data);
+        // If not address given, just go to the next node
+        auto id = node->getNodeAddress();
+        if (node->last_node())
+        {
+          id.x = id.y = id.z = 0;
+          auto next_node = (PipeNode *)map->getPipeNode(id);
+          next_node->out_data_queue()->Push(data);
+        }
+        else
+        {
+          id.y += 1;
+          // std::cout << "NODE id.x = " << id.x << " id.y = " << id.y << std::endl;
+          auto next_node = (PipeNode *)map->getPipeNode(id);
+          next_node->in_data_queue()->Push(data);
+        }
       }
-      //      std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
-
       if (terminate)
         processing_unit->End(data);
 
@@ -276,16 +319,16 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, std::mutex &prof, std::v
  */
 int Pipeline::RunPipe()
 {
-  
+
   int nodes_executed = 0;
   //  auto node = firstNode_;
   auto id = pipeMapper::nodeId(0, 0, 0);
-  PipeNode* node;
+  PipeNode *node;
   bool done = false;
 
   do
   {
-    node = (PipeNode*)oneDimPipe.getPipeNode(id);
+    node = (PipeNode *)oneDimPipe->getPipeNode(id);
     auto numberOfInstances = node->number_of_instances();
     for (auto instanceIt = 0; instanceIt < numberOfInstances; ++instanceIt)
     {

@@ -7,21 +7,21 @@ add_library(pipeExec
 	semaphore.cpp
 	pipeQueue.cpp
 	pipeMapper.cpp
-)
+	)
 
 set(CMAKE_INSTALL_LIB_DIR $HOME/lib)
 set(CMAKE_INSTALL_INCLUDE_DIR $HOME/include)
 
 target_include_directories(pipeExec
-    PUBLIC
+	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include>
-)
+	)
 
 install(TARGETS pipeExec
 	EXPORT pipeExecTargets
 	ARCHIVE DESTINATION lib
-)
+	)
 
 install(FILES
 	pipeExec.h
