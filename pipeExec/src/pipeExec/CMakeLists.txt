@@ -3,6 +3,7 @@ add_library(pipeExec
 	memory_manager.cpp
 	pipeline.cpp
 	mesh.cpp
+	cube.cpp
 	pipe_node.cpp
 	semaphore.cpp
 	pipeQueue.cpp
@@ -29,6 +30,7 @@ install(FILES
 	memory_manager.h
 	pipeline.h
 	mesh.h
+	cube.h
 	pipe_node.h
 	profiling.h
 	processing_unit_interface.h

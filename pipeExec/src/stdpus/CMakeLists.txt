@@ -7,6 +7,7 @@ add_library(stdpus
 	sleeper.cpp
 	drano.cpp
 	distributer.cpp
+	distributerCube.cpp
 	)
 
 # Set the include directories
@@ -35,6 +36,7 @@ install(FILES
 	sleeper.h
 	drano.h
 	distributer.h
+	distributerCube.h
 
 	DESTINATION include/stdpus
 	)
