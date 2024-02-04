@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 11)
 # Set the source files
 set(SOURCES ${CMAKE_SOURCE_DIR}/src/sleeper_main.cpp)
 set(MESH_SOURCES ${CMAKE_SOURCE_DIR}/src/mesh_sleep.cpp)
+set(CUBE_SOURCES ${CMAKE_SOURCE_DIR}/src/cube_sleep.cpp)
 
 #set(SLEEPDS ${CMAKE_SOURCE_DIR}/src/sleeperD.cpp
 #            ${CMAKE_SOURCE_DIR}/src/sleeper_data.cpp)
@@ -28,6 +29,7 @@ link_directories(
 # Create the executable
 add_executable(sleeper ${SOURCES})
 add_executable(sleeperMesh ${MESH_SOURCES})
+add_executable(sleeperCube ${CUBE_SOURCES})
 #add_executable(sleeperD ${SLEEPDS})
 
 # Link against the libraries (replace with your library names)
@@ -38,6 +40,12 @@ target_link_libraries(sleeper
 )
 
 target_link_libraries(sleeperMesh
+    pipeExec
+    stdpus
+    pthread
+)
+
+target_link_libraries(sleeperCube
     pipeExec
     stdpus
     pthread

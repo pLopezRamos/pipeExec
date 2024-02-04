@@ -18,7 +18,7 @@ Cube::~Cube()
     {
       for (auto z = 0; z < zRange_; ++z)
       {
-        node = (PipeNode *)threeDimPipe->getPipeNode(pipeMapper::nodeId(x, y, 0));
+        node = (PipeNode *)threeDimPipe->getPipeNode(pipeMapper::nodeId(x, y, z));
         delete (node);
       }
     }
@@ -133,7 +133,7 @@ PipeNode *Cube::AddProcessingUnit(ProcessingUnitInterface *procUnit, int instanc
  * cloning instances of the processing unit.
  *
  */
-void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper *map, pipeQueue *outQueue)
+void RunCubeNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper *map, pipeQueue *outQueue)
 {
 
   ProcessingUnitInterface *processing_unit = node->processing_unit();
@@ -182,7 +182,7 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper *map, pipeQue
             {
               mtx.lock();
               std::cout << "NODE " << node->node_id() << " LAUNCH NEW INSTANCE " << std::endl;
-              node->PushThread(new std::thread(RunNode, node, node->number_of_instances(), std::ref(mtx), std::ref(map), std::ref(outQueue)));
+              node->PushThread(new std::thread(RunCubeNode, node, node->number_of_instances(), std::ref(mtx), std::ref(map), std::ref(outQueue)));
               node->number_of_instances(node->number_of_instances() + 1);
             }
             break;
@@ -268,12 +268,13 @@ void RunNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper *map, pipeQue
         else
         {
           id.z += 1;
-          // std::cout << "NODE id.x = " << id.x << " id.y = " << id.y << std::endl;
+//           std::cout << "NODE id.x = " << id.x << " id.y = " << id.y << " id.z = " << id.z << std::endl;
           auto next_node = (PipeNode *)map->getPipeNode(id);
+//      std::cout << "NODE " << next_node->node_id() << " DATA PUSHED " << std::endl;
           next_node->in_data_queue()->Push(data);
         }
       }
-      // std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
+//      std::cout << "NODE " << node->node_id() << " DATA PUSHED " << std::endl;
 
       if (terminate)
         processing_unit->End(data);
@@ -305,7 +306,7 @@ int Cube::RunCube()
     {
       for (int z = 0; z < zRange_; ++z)
       {
-        node = (PipeNode *)threeDimPipe->getPipeNode(pipeMapper::nodeId(x, y, 0));
+        node = (PipeNode *)threeDimPipe->getPipeNode(pipeMapper::nodeId(x, y, z));
         auto numberOfInstances = node->number_of_instances();
         for (auto instanceIt = 0; instanceIt < numberOfInstances; ++instanceIt)
         {
@@ -313,7 +314,7 @@ int Cube::RunCube()
           {
             execution_mutex_.lock();
             node->PushThread(new std::thread(
-                RunNode, node, instanceIt, std::ref(execution_mutex_),
+                RunCubeNode, node, instanceIt, std::ref(execution_mutex_),
                 threeDimPipe, std::ref(out_queue_)));
           }
           catch (...)
