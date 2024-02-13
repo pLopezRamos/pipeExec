@@ -112,11 +112,11 @@ pipeQueue::~pipeQueue() {
   // Increment the queue_count_
   queue_count_ += 1;
 
-  // Release the lock for the queue_mutex_
-  push_mutex_.unlock();
-
   // Signal the queue_semaphore_ queue_semaphore to wake up a thread that is waiting to pop an element from the queue_
   pop_semaphore_->Signal();
+
+  // Release the lock for the queue_mutex_
+  push_mutex_.unlock();
 
   // Return true to indicate that the data was successfully pushed into the queue
   return true;
@@ -158,10 +158,11 @@ void *pipeQueue::Pop(bool block) {
   // Decrement the queue_count_
   queue_count_ -= 1;
 
+  push_semaphore_->Signal();
+
   // Release the lock for the queue_mutex_
   pop_mutex_.unlock();
 
-  push_semaphore_->Signal();
   // Return the popped element
   return memory_buffer;
 }

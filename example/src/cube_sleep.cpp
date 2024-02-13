@@ -39,11 +39,11 @@ int CubeMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   // std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   NullUnit void_unit;
-  int number_of_data_items = 2500;
-  unsigned int xRange = 5;
-  unsigned int yRange = 5;
-  unsigned int zRange = 3;
-  unsigned int qSize = 10;
+  int number_of_data_items = 100000;
+  unsigned int xRange = 10;
+  unsigned int yRange = 10;
+  unsigned int zRange = 10;
+  unsigned int qSize = 100;
 
   std::cout << "In line " << __LINE__ << std::endl;
 
