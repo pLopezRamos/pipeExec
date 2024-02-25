@@ -14,7 +14,7 @@ public:
         unsigned int y;
     } ;
 
-    distributerCube(Cube *cube, pipeQueue *queue,  const std::vector<inputMesh>pipesLocations);
+    distributerCube(Cube *cube, pipeQueue *queue,  const std::vector<inputMesh>& pipesLocations);
 
     pipeQueue *in_data_queue() const { return in_queue_; };
     void in_data_queue(pipeQueue *queue) { in_queue_ = queue; };
