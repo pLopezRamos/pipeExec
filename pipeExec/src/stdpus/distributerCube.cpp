@@ -11,6 +11,7 @@
  * @param cube pointer to the Cube object
  * @param queue pointer to the pipeQueue object
  * @param pipeLocs vector of inputMesh objects containing the locations of the pipes
+ * 
  */
 distributerCube::distributerCube(Cube *cube, pipeQueue *queue, const std::vector<inputMesh>& pipeLocs) {
 

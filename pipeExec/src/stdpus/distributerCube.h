@@ -16,8 +16,22 @@ public:
 
     distributerCube(Cube *cube, pipeQueue *queue,  const std::vector<inputMesh>& pipesLocations);
 
-    pipeQueue *in_data_queue() const { return in_queue_; };
-    void in_data_queue(pipeQueue *queue) { in_queue_ = queue; };
+    /**
+     * @brief Getter function that returns the value of the in_queue_ member variable.
+     * 
+     * @return pipeQueue* Pointer to a pipeQueue object.
+     */
+    pipeQueue* in_data_queue() const {
+        return in_queue_;
+    }
+    /**
+    * @brief Setter function for the in_data_queue member variable.
+    * 
+    * @param queue Pointer to a pipeQueue object.
+    */
+    void in_data_queue(pipeQueue* queue) {
+        in_queue_ = queue;
+    }
     void send(pipeData::dataPacket data);
 
 private:
