@@ -39,10 +39,10 @@ int MeshMain(bool debug_flag, bool pu_debug_flag, bool profiling)
 //std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   NullUnit void_unit;
-  int number_of_data_items = 1000;
+  int number_of_data_items = 10000;
   unsigned int xRange = 10;
-  unsigned int yRange = 10;
-  unsigned int qSize = 5;
+  unsigned int yRange = 100;
+  unsigned int qSize = 50;
 
   Mesh *mesh = new Mesh(xRange, yRange, 5, false);
   for (unsigned int x = 0; x < xRange; ++x)
@@ -68,8 +68,10 @@ int MeshMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   pipeData *data;
   int dataId;
   int allocated_memory = 0;
+  int slowdown = 0;
   for (int i = 0; i < number_of_data_items; ++i)
   {
+    std::cout << "i = " << i << " ";
     //  std::cout << __func__ << " : " << __LINE__ << std::endl;
     // Create new data items until they start returning from the pipe
     if ((data = (pipeData *)dataOut->Pop(false)) == nullptr)
@@ -87,7 +89,8 @@ int MeshMain(bool debug_flag, bool pu_debug_flag, bool profiling)
     }
 
     // Do something with the data
-    //    sleep(1);
+    if ( ! slowdown )  sleep(1);
+    slowdown = (++slowdown % qSize );
 
     dataId = *static_cast<int *>(data->GetExtraData("DATA_ID"));
 

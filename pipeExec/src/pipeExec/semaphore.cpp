@@ -24,7 +24,7 @@ Semaphore::~Semaphore() {}
  * @brief Waits for the semaphore
  *
  * This function blocks the calling thread until the semaphore count is
- * greater than or equal to zero.
+ * greater than zero.
  */
 void Semaphore::Wait() {
   std::unique_lock<std::mutex> lock(mutex_);

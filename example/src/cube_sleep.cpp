@@ -39,10 +39,10 @@ int CubeMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   // std::cout << "In function " << __func__ << " line " << __LINE__ << std::endl;
 
   NullUnit void_unit;
-  int number_of_data_items = 100000;
-  unsigned int xRange = 10;
-  unsigned int yRange = 10;
-  unsigned int zRange = 10;
+  int number_of_data_items = 10000;
+  unsigned int xRange = 2;
+  unsigned int yRange = 2;
+  unsigned int zRange = 2;
   unsigned int qSize = 100;
 
   std::cout << "In line " << __LINE__ << std::endl;
@@ -79,11 +79,12 @@ int CubeMain(bool debug_flag, bool pu_debug_flag, bool profiling)
   pipeData *data;
   int dataId;
   int allocated_memory = 0;
+  int slowdown = 0;
   for (int i = 0; i < number_of_data_items; ++i)
   {
     //  std::cout << __func__ << " : " << __LINE__ << std::endl;
     // Create new data items until they start returning from the pipe
-   std::cout << __func__ << " : " << __LINE__ << std::endl;
+   //std::cout << __func__ << " : " << __LINE__ << std::endl;
     if ((data = (pipeData *)dataOut->Pop(false)) == nullptr)
     {
       std::cout << "i = " << i << " Allocate a new data item ";
@@ -99,14 +100,13 @@ int CubeMain(bool debug_flag, bool pu_debug_flag, bool profiling)
     }
 
     // Do something with the data
-    //    sleep(1);
-
+    if ( ! slowdown) sleep(1);
+    slowdown = ( ++slowdown % qSize);
     dataId = *static_cast<int *>(data->GetExtraData("DATA_ID"));
 
     std::cout << "dataId =  " << dataId << std::endl;
 
-    cube_start->send(static_cast<pipeData::dataPacket>(data));
-   std::cout << __func__ << " : " << __LINE__ << std::endl;
+   //std::cout << __func__ << " : " << __LINE__ << std::endl;
   }
 
   std::cout << "Waiting for pipe to drain " << allocated_memory << " data buffers\n";

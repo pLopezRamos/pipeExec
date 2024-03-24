@@ -15,16 +15,17 @@
  */
 distributerCube::distributerCube(Cube *cube, pipeQueue *queue, const std::vector<inputMesh>& pipeLocs) {
 
+
     for (const auto& l : pipeLocs) {
         PipeNode* node = (PipeNode*) cube->threeDimPipe->getPipeNode(pipeMapper::nodeId(l.x, l.y, 0));
-        if (node != nullptr) {
-            cubePipes_.emplace_back(node->in_data_queue());
-        }
+//        if (node != nullptr) {
+            cubePipes_.push_back(node->in_data_queue());
+//        }
     }
 
-    if (queue != nullptr) {
+//    if (queue != nullptr) {
         in_data_queue(queue);
-    }
+//    }
     current_pipe_ = 0;
 }
 

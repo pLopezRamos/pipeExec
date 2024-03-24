@@ -224,7 +224,7 @@ void RunCubeNode(PipeNode *node, int n_id, std::mutex &mtx, pipeMapper *map, pip
       processing_unit->Run(data);
       // std::cout << "NODE " << node->node_id() << " END   RUN " << std::endl;
 
-      // Check if the proccesing unit wants to write to a named address
+      // Check if the processing unit wants to write to a named address
       auto namedNode = (std::string *)pData->GetExtraData("_#NAMED_ADDRESS#_");
       PipeNode *nextNode;
       pipeMapper::nodeId *nextNodeId = nullptr;

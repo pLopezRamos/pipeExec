@@ -93,12 +93,12 @@ pipeQueue::~pipeQueue() {
   push_mutex_.lock();
 
   // Check if the queue is full
-  if (queue_count_ == max_size_) {
+ /* if (queue_count_ == max_size_) {
 
     // The queue is full, so we cannot push the data into the queue
     push_mutex_.unlock();
     return false;
-  }
+  }*/
 
   // Push the data into the queue
   rear_iterator_ += 1;
@@ -132,7 +132,7 @@ pipeQueue::~pipeQueue() {
  */
 void *pipeQueue::Pop(bool block) {
   
-  if ( (queue_count() == 0) && ! block ) return nullptr;
+  if ( (queue_count_ == 0) && ! block ) return nullptr;
 
   // Wait for the queue_semaphore_ queue_semaphore to be signaled, indicating that there is an element in the queue_
   pop_semaphore_->Wait();
@@ -141,12 +141,8 @@ void *pipeQueue::Pop(bool block) {
   // This ensures that only one thread can access the queue_ array at a time
   pop_mutex_.lock();
 
-  // Check if the queue is empty
-  if (queue_count_ == 0) {
-    // The queue is empty, so we cannot pop an element from the queue
-    pop_mutex_.unlock();
-    throw std::out_of_range("The in queue is empty, nothing to return.");
-  }
+  // Decrement the queue_count_
+  queue_count_ -= 1;
 
   // Pop the element from the queue
   void *memory_buffer = queue_[front_iterator_];
@@ -154,9 +150,6 @@ void *pipeQueue::Pop(bool block) {
 
   // Increment the front iterator
   front_iterator_ = (front_iterator_ + 1) % max_size_;
-
-  // Decrement the queue_count_
-  queue_count_ -= 1;
 
   push_semaphore_->Signal();
 
